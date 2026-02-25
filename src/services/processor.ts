@@ -371,7 +371,7 @@ export class Processor {
         throw new Error(`Claude exited with code ${claudeResult.exitCode}`);
       }
 
-      this.updateIssue(tracked, { status: 'review-posted', completedAt: Date.now() });
+      this.updateIssue(tracked, { status: 'review-posted', prUrl: meta.url, completedAt: Date.now() });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.updateIssue(tracked, { status: 'failed', error: message, completedAt: Date.now() });

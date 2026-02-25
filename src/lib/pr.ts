@@ -32,6 +32,7 @@ export interface PRMetadata {
   body: string;
   headRefName: string;
   baseRefName: string;
+  url: string;
 }
 
 export async function fetchPRMetadata(
@@ -40,7 +41,7 @@ export async function fetchPRMetadata(
   repoSlug?: string
 ): Promise<PRMetadata> {
   const cmdParts = splitCommand(ghCommand);
-  const args = [...cmdParts, 'pr', 'view', String(prNumber), '--json', 'title,body,headRefName,baseRefName'];
+  const args = [...cmdParts, 'pr', 'view', String(prNumber), '--json', 'title,body,headRefName,baseRefName,url'];
   if (repoSlug) args.push('-R', repoSlug);
 
   const proc = Bun.spawn(args, { stdout: 'pipe', stderr: 'pipe' });
