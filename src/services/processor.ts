@@ -653,10 +653,10 @@ export class Processor {
     if (!match) return;
 
     const [, repo, prNumber] = match;
-    const ghCmd = project.githubCommand;
+    const ghParts = project.githubCommand.split(/\s+/);
 
     const viewProc = Bun.spawn(
-      [ghCmd, 'pr', 'view', prNumber, '--json', 'title', '-R', repo],
+      [...ghParts, 'pr', 'view', prNumber, '--json', 'title', '-R', repo],
       { stdout: 'pipe', stderr: 'pipe' }
     );
     if ((await viewProc.exited) !== 0) return;
@@ -668,7 +668,7 @@ export class Processor {
 
     const newTitle = `\u{1F916} ${title}`;
     const editProc = Bun.spawn(
-      [ghCmd, 'pr', 'edit', prNumber, '--title', newTitle, '-R', repo],
+      [...ghParts, 'pr', 'edit', prNumber, '--title', newTitle, '-R', repo],
       { stdout: 'pipe', stderr: 'pipe' }
     );
     await editProc.exited;
