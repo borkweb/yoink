@@ -1,0 +1,57 @@
+import React from 'react';
+import { Box, Text } from 'ink';
+import type { TrackedIssue } from '../types';
+
+interface Props {
+  tracked: TrackedIssue;
+  maxLines?: number;
+}
+
+export function LogPanel({ tracked, maxLines = 10 }: Props) {
+  const { issue, logs, error, status } = tracked;
+  const visibleLogs = logs.slice(-maxLines);
+
+  return (
+    <Box flexDirection="column" marginLeft={3} marginBottom={1}>
+      {visibleLogs.map((line, i) => (
+        <Box key={i}>
+          <Text dimColor>
+            {'\u2503'} {line}
+          </Text>
+        </Box>
+      ))}
+      {error && (
+        <Box>
+          <Text color="red">
+            {'\u2503'} Error: {error}
+          </Text>
+        </Box>
+      )}
+      {status === 'failed' && (
+        <Box marginTop={0}>
+          <Text>
+            {'\u2503'}{'  '}
+            <Text color="yellow" bold>[r]</Text>
+            <Text> Retry  </Text>
+            <Text color="cyan" bold>[c]</Text>
+            <Text> Continue  </Text>
+            <Text color="red" bold>[d]</Text>
+            <Text> Delete</Text>
+          </Text>
+        </Box>
+      )}
+      {tracked.prUrl && (
+        <Box>
+          <Text color="green">
+            {'\u2503'} {tracked.prUrl}
+          </Text>
+        </Box>
+      )}
+      {logs.length === 0 && !error && !tracked.prUrl && (
+        <Box>
+          <Text dimColor>{'\u2503'} Waiting for output...</Text>
+        </Box>
+      )}
+    </Box>
+  );
+}

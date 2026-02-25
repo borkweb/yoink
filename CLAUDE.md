@@ -1,0 +1,74 @@
+# CLAUDE.md
+
+## Project Overview
+
+**yoink** — a CLI tool that fetches Linear issues and processes them with Claude Code, creating worktrees, implementing fixes, and opening PRs. Built with Bun + TypeScript, React + Ink for the terminal UI.
+
+## Tech Stack
+
+- **Runtime**: Bun
+- **Language**: TypeScript (strict)
+- **UI**: React 18 + Ink 5 (terminal rendering)
+- **Config**: TOML via `smol-toml`
+- **CLI**: `meow`
+- **Testing**: `bun test` (built-in test runner)
+
+## Project Structure
+
+```
+bin/yoink.ts              CLI entry point (executable)
+src/
+  index.tsx               meow CLI setup, renders App
+  app.tsx                 App component (initialization, history loading)
+  types.ts                shared types (TrackedIssue, Config, etc.)
+  config.ts               TOML config loading from ~/.config/yoink/config.toml
+  components/
+    Dashboard.tsx          main TUI — issue list, keyboard input, sections
+    IssueRow.tsx           single issue row with status icon and timing
+    LogPanel.tsx           expandable log viewer with action hints
+    StatusBar.tsx          bottom bar with counts, elapsed time, help
+  services/
+    processor.ts           core orchestration — queue, concurrency, retry/continue/delete
+    claude.ts              Claude CLI spawning, prompt building, output parsing
+    linear.ts              Linear GraphQL API client
+    state.ts               JSON state persistence (~/.config/yoink/state.json)
+  lib/
+    git.ts                 git worktree create/remove, branch cleanup
+```
+
+## Commands
+
+```bash
+bun test                  # run all tests
+bun run src/index.tsx     # run the CLI in development
+```
+
+## Conventions
+
+- Use `Bun.spawn()` for subprocesses, not `child_process`
+- Pipe stdout/stderr in spawned processes (`stdout: 'pipe', stderr: 'pipe'`)
+- Use `await proc.exited` for exit codes, `new Response(proc.stdout).text()` for output
+- Processor emits events (`update`, `done`, `polling`) — Dashboard listens via `processor.on()`
+- State mutations go through `Processor.updateIssue()` which calls `persistIssue()` automatically
+- All external API calls (Linear, GitHub CLI) are `.catch(() => {})` wrapped to avoid crashing the pipeline
+- Worktree paths follow the pattern: `../reponame-identifier/`
+- Branch names follow: `linear/<identifier-lowercase>`
+- PR titles are prefixed with a robot emoji programmatically after creation via the GitHub CLI
+
+## Testing
+
+Tests use `bun:test` with `describe`/`it`/`expect`. Test files live alongside source files as `*.test.ts`. Mock external dependencies (Linear API, Claude CLI, git) — don't make real API calls or spawn real processes in tests.
+
+## Issue Status Flow
+
+```
+queued → creating-worktree → running-claude → pr-created
+                                            → failed → (retry | continue | abandoned)
+```
+
+## Key Types
+
+- `IssueStatus`: `'queued' | 'creating-worktree' | 'running-claude' | 'pushing' | 'pr-created' | 'failed' | 'abandoned'`
+- `TrackedIssue`: the central data structure — issue metadata, status, logs, sessionId, worktreeDir, prUrl
+- `Config` / `ProjectConfig`: typed config from TOML
+- `ProcessorEvent`: event union emitted to the UI

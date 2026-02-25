@@ -1,0 +1,26 @@
+[defaults]
+concurrency = 2
+max_turns = 100
+poll_interval = 30  # seconds between Linear polls (0 to disable)
+
+[linear]
+api_key = "lin_api_YOUR_KEY_HERE"
+
+[projects.myproject]
+repo_dir = "/Users/you/path-to-project"
+base_branch = "main"
+linear_team = "TEAM"
+linear_assignee = "linearusername"
+linear_label = "AI Automation"
+github_command = "gh"
+allowed_tools = "Read,Edit,Write,Glob,Grep,Bash(git *),Bash(composer *),Bash(php *),Bash(cd client *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)"
+
+# Example second project:
+# [projects.jetpack]
+# repo_dir = "/Users/you/sites/jetpack"
+# base_branch = "trunk"
+# linear_team = "JP"
+# linear_assignee = "your.name"
+# linear_label = "AI Automation"
+# github_command = "gh"
+# allowed_tools = "Read,Edit,Write,Glob,Grep,Bash"
