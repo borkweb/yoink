@@ -6,6 +6,14 @@ import { getConfigPath, configExists } from './config';
 import { SetupWizard } from './components/SetupWizard';
 import { InitOverwrite } from './components/InitOverwrite';
 
+console.log(`
+  __   __  ___   ___  _   _  _  __
+  \\ \\ / / / _ \\ |_ _|| \\ | || |/ /
+   \\ V / | | | | | | |  \\| || ' /
+    | |  | |_| | | | | |\\  || . \\
+    |_|   \\___/ |___||_| \\_||_|\\_\\
+`);
+
 const cli = meow(
   `
   Usage

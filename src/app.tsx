@@ -34,14 +34,14 @@ export function App({ projectName, singleIssue, all, dryRun, concurrency }: Prop
             if (history.length > 0) proc.mergeHistory(history);
           }
         } else if (projectName) {
-          setTitle(projectName);
+          setTitle(`${projectName} \u2014 ${config.projects[projectName].repoDir}`);
           await proc.loadIssues(projectName, singleIssue);
           const history = proc.getHistoryIssues(projectName);
           if (history.length > 0) proc.mergeHistory(history);
         } else {
           const names = Object.keys(config.projects);
           if (names.length === 1) {
-            setTitle(names[0]);
+            setTitle(`${names[0]} \u2014 ${config.projects[names[0]].repoDir}`);
             await proc.loadIssues(names[0], singleIssue);
             const history = proc.getHistoryIssues(names[0]);
             if (history.length > 0) proc.mergeHistory(history);

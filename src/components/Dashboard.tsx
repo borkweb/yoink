@@ -142,7 +142,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
       {/* Header */}
       <Box marginBottom={1} justifyContent="space-between">
         <Text bold color="cyan">
-          {' '}yoink — {title}
+          {' '}{title}
         </Text>
         {done && <Text color="green" bold>Complete</Text>}
         {dryRun && <Text color="yellow" bold>DRY RUN</Text>}
