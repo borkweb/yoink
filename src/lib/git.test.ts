@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtempSync, rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { removeWorktree, deleteBranch } from './git';
+import { removeWorktree, deleteBranch, reviewWorktreeDirFor } from './git';
 
 describe('git worktree management', () => {
   let repoDir: string;
@@ -52,5 +52,12 @@ describe('git worktree management', () => {
 
   it('removeWorktree does not throw if directory already gone', async () => {
     await expect(removeWorktree(repoDir, '/tmp/nonexistent-worktree-xyz')).resolves.toBeUndefined();
+  });
+});
+
+describe('reviewWorktreeDirFor', () => {
+  it('generates path with pr- prefix', () => {
+    const result = reviewWorktreeDirFor('/home/user/repo', 42);
+    expect(result).toBe('/home/user/repo/../repo-pr-42');
   });
 });

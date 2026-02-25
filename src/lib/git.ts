@@ -41,6 +41,43 @@ export function worktreeDirFor(repoDir: string, identifier: string): string {
   return `${repoDir}/../${repoName}-${idLower}`;
 }
 
+export function reviewWorktreeDirFor(repoDir: string, prNumber: number): string {
+  const repoName = basename(repoDir);
+  return `${repoDir}/../${repoName}-pr-${prNumber}`;
+}
+
+export async function createReviewWorktree(
+  repoDir: string,
+  headRefName: string,
+  prNumber: number
+): Promise<{ worktreeDir: string }> {
+  const worktreeDir = reviewWorktreeDirFor(repoDir, prNumber);
+
+  if (existsSync(worktreeDir)) {
+    throw new Error(`Worktree already exists at ${worktreeDir}`);
+  }
+
+  const fetchProc = Bun.spawn(['git', '-C', repoDir, 'fetch', 'origin', headRefName], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  if ((await fetchProc.exited) !== 0) {
+    const err = await new Response(fetchProc.stderr).text();
+    throw new Error(`git fetch failed: ${err}`);
+  }
+
+  const addProc = Bun.spawn(
+    ['git', '-C', repoDir, 'worktree', 'add', worktreeDir, `origin/${headRefName}`],
+    { stdout: 'pipe', stderr: 'pipe' }
+  );
+  if ((await addProc.exited) !== 0) {
+    const err = await new Response(addProc.stderr).text();
+    throw new Error(`git worktree add failed: ${err}`);
+  }
+
+  return { worktreeDir };
+}
+
 export async function removeWorktree(
   repoDir: string,
   worktreeDir: string
