@@ -90,7 +90,7 @@ linear_team = "TEAM"
 linear_assignee = "johndoe"
 linear_label = "AI Automation"
 github_command = "gh"
-allowed_tools = "Read,Edit,Write,Glob,Grep,Bash"
+allowed_tools = "Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)"
 `;
     const config = parseConfig(wizardOutput);
     expect(config.linear.apiKey).toBe('lin_api_abc123');
@@ -106,6 +106,6 @@ allowed_tools = "Read,Edit,Write,Glob,Grep,Bash"
     expect(p.linearAssignee).toBe('johndoe');
     expect(p.linearLabel).toBe('AI Automation');
     expect(p.githubCommand).toBe('gh');
-    expect(p.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Bash');
+    expect(p.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)');
   });
 });

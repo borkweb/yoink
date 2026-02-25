@@ -23,4 +23,4 @@ allowed_tools = "Read,Edit,Write,Glob,Grep,Bash(git *),Bash(composer *),Bash(php
 # linear_assignee = "your.name"
 # linear_label = "AI Automation"
 # github_command = "gh"
-# allowed_tools = "Read,Edit,Write,Glob,Grep,Bash"
+# allowed_tools = "Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)"
