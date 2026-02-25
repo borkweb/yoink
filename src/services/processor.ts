@@ -1,10 +1,11 @@
-import { join } from 'path';
+import { join, basename } from 'path';
 import { homedir } from 'os';
 import type { Config, TrackedIssue, IssueStatus, ProjectConfig } from '../types';
 import { fetchIssues, updateIssueState, addComment } from './linear';
-import { createWorktree, removeWorktree, deleteBranch, worktreeDirFor } from '../lib/git';
-import { buildPrompt, spawnClaude, YOINK_ROOT, ensureSuperpowers } from './claude';
+import { createWorktree, removeWorktree, deleteBranch, worktreeDirFor, createReviewWorktree } from '../lib/git';
+import { buildPrompt, buildReviewPrompt, spawnClaude, YOINK_ROOT, ensureSuperpowers } from './claude';
 import { loadState, saveIssueState, pruneState, saveState } from './state';
+import { fetchPRMetadata } from '../lib/pr';
 
 export type ProcessorEvent =
   | { type: 'update'; issues: TrackedIssue[] }
@@ -280,6 +281,107 @@ export class Processor {
       .catch(() => {});
   }
 
+  async reviewPR(input: { prNumber: number; repoSlug: string | null; projectName?: string }): Promise<void> {
+    // Resolve project
+    let projectName: string;
+    let project: ProjectConfig;
+    let repoSlug = input.repoSlug;
+
+    if (input.repoSlug) {
+      const match = this.matchProjectByRepo(input.repoSlug);
+      if (!match) throw new Error(`No configured project matches repo: ${input.repoSlug}`);
+      projectName = match.name;
+      project = match.project;
+    } else if (input.projectName) {
+      projectName = input.projectName;
+      project = this.config.projects[projectName];
+      if (!project) throw new Error(`Unknown project: ${projectName}`);
+    } else {
+      const names = Object.keys(this.config.projects);
+      if (names.length !== 1) throw new Error('Multiple projects configured — provide a full PR URL');
+      projectName = names[0];
+      project = this.config.projects[projectName];
+    }
+
+    // Fetch PR metadata
+    const meta = await fetchPRMetadata(project.githubCommand, input.prNumber, repoSlug ?? undefined);
+
+    // Create tracked issue entry for the dashboard
+    const identifier = `PR-${input.prNumber}`;
+    const tracked: TrackedIssue = {
+      issue: {
+        id: `review-${input.prNumber}-${Date.now()}`,
+        identifier,
+        title: meta.title,
+        description: meta.body,
+        url: '',
+        priority: 0,
+        state: { name: 'Review', type: 'review' },
+      },
+      project: projectName,
+      repoDir: project.repoDir,
+      status: 'creating-worktree',
+      logs: [],
+      prNumber: input.prNumber,
+      startedAt: Date.now(),
+    };
+
+    this.issues.push(tracked);
+    this.emit({ type: 'update', issues: this.getIssues() });
+
+    try {
+      // Create worktree on PR branch
+      const { worktreeDir } = await createReviewWorktree(
+        project.repoDir,
+        meta.headRefName,
+        input.prNumber
+      );
+      this.updateIssue(tracked, { worktreeDir, status: 'reviewing' });
+
+      // Build review prompt and spawn Claude
+      const prompt = buildReviewPrompt({
+        prNumber: input.prNumber,
+        title: meta.title,
+        body: meta.body,
+        baseBranch: meta.baseRefName,
+        headBranch: meta.headRefName,
+        githubCommand: project.githubCommand,
+        repoSlug: repoSlug ?? undefined,
+      });
+
+      const { process: proc, result } = spawnClaude({
+        prompt,
+        worktreeDir,
+        maxTurns: this.config.defaults.maxTurns,
+        allowedTools: project.allowedTools,
+        pluginDirs: this.pluginDirs,
+        onLog: (line) => {
+          tracked.logs.push(line);
+          if (tracked.logs.length > 500) tracked.logs.shift();
+          this.emit({ type: 'update', issues: this.getIssues() });
+        },
+      });
+
+      this.activeProcesses.set(identifier, proc);
+      const claudeResult = await result;
+      this.activeProcesses.delete(identifier);
+
+      if (claudeResult.exitCode !== 0) {
+        throw new Error(`Claude exited with code ${claudeResult.exitCode}`);
+      }
+
+      this.updateIssue(tracked, { status: 'review-posted', completedAt: Date.now() });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.updateIssue(tracked, { status: 'failed', error: message, completedAt: Date.now() });
+    } finally {
+      // Always clean up the worktree
+      if (tracked.worktreeDir) {
+        await removeWorktree(project.repoDir, tracked.worktreeDir).catch(() => {});
+      }
+    }
+  }
+
   private clearPollTimer(): void {
     if (this.pollTimer) {
       clearTimeout(this.pollTimer);
@@ -385,6 +487,17 @@ export class Processor {
       completedAt: tracked.completedAt ?? 0,
       error: tracked.error ?? null,
     });
+  }
+
+  private matchProjectByRepo(repoSlug: string): { name: string; project: ProjectConfig } | null {
+    const repoName = repoSlug.split('/').pop()!;
+    for (const [name, project] of Object.entries(this.config.projects)) {
+      const projRepoName = basename(project.repoDir);
+      if (projRepoName === repoName) {
+        return { name, project };
+      }
+    }
+    return null;
   }
 
   private async processIssue(tracked: TrackedIssue): Promise<void> {
