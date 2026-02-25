@@ -45,6 +45,8 @@ src/
   lib/
     git.ts                 git worktree create/remove, branch cleanup, review worktree helpers
     pr.ts                  PR URL parsing and metadata fetching via GitHub CLI
+    github.ts              GitHub CLI wrapper for PR creation
+    shell.ts               splitCommand() — splits command strings with tilde expansion
 ```
 
 ## Commands
@@ -62,8 +64,9 @@ bun run src/index.tsx     # run the CLI in development
 - Processor emits events (`update`, `done`, `polling`) — Dashboard listens via `processor.on()`
 - State mutations go through `Processor.updateIssue()` which calls `persistIssue()` automatically
 - All external API calls (Linear, GitHub CLI) are `.catch(() => {})` wrapped to avoid crashing the pipeline
-- Worktree paths follow the pattern: `../reponame-identifier/`
+- Worktree paths follow the pattern: `../reponame-identifier/` (review worktrees: `../reponame-pr-<number>/`)
 - Branch names follow: `linear/<identifier-lowercase>`
+- Use `splitCommand()` from `src/lib/shell.ts` when spawning `githubCommand` — it splits on whitespace and expands `~/` (needed for multi-word commands like `proxychains4 -q -f ~/.proxychains.conf gh`)
 - PR titles are prefixed with a robot emoji programmatically after creation via the GitHub CLI
 
 ## Testing

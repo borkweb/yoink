@@ -1,6 +1,6 @@
 # yoink
 
-A CLI tool that fetches Linear issues and processes them with Claude Code — creating worktrees, implementing fixes, and opening PRs automatically. Built with Bun, React, and [Ink](https://github.com/vadimdemedes/ink) for a live terminal dashboard.
+A CLI tool that fetches Linear issues and processes them with Claude Code — creating worktrees, implementing fixes, and opening PRs automatically. Also supports on-demand PR code reviews from the dashboard. Built with Bun, React, and [Ink](https://github.com/vadimdemedes/ink) for a live terminal dashboard.
 
 ## How It Works
 
@@ -11,6 +11,8 @@ A CLI tool that fetches Linear issues and processes them with Claude Code — cr
 5. Cleans up worktrees after successful PRs
 
 Multiple issues run concurrently. Running issues can be stopped mid-execution. Failed and stopped issues persist across restarts and can be retried, continued (via Claude's `--resume`), or abandoned. All finished tickets show a copy-paste `claude --resume` command for interactive follow-up.
+
+You can also review any GitHub PR from the dashboard by pressing `v` and pasting a PR URL or number. Yoink creates a worktree, runs a superpowers code review via Claude, and posts the result as a comment on the PR.
 
 ## Prerequisites
 
@@ -54,7 +56,7 @@ base_branch = "main"
 linear_team = "TEAM"
 linear_assignee = "your.name"
 linear_label = "AI Automation"
-github_command = "gh"                        # or a custom wrapper
+github_command = "gh"                        # supports multi-word commands, e.g. "proxychains4 -q -f ~/.proxychains.conf gh"
 allowed_tools = "Read,Edit,Write,Glob,Grep,Bash(git *)"
 ```
 
