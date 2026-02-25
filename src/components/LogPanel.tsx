@@ -50,7 +50,7 @@ export function LogPanel({ tracked, maxLines = 10 }: Props) {
           </Text>
         </Box>
       )}
-      {(status === 'failed' || status === 'stopped') && (
+      {(status === 'failed' || status === 'stopped') && !tracked.prNumber && (
         <Box marginTop={0}>
           <Text>
             {'\u2503'}{'  '}
