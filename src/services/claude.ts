@@ -1,8 +1,38 @@
-import { dirname } from 'path';
+import { dirname, join } from 'path';
+import { homedir } from 'os';
+import { globSync } from 'fs';
 import type { ProjectConfig } from '../types';
 
 /** Absolute path to the yoink project root (used as --plugin-dir) */
 export const YOINK_ROOT = dirname(dirname(import.meta.dir));
+
+const SUPERPOWERS_CACHE = join(homedir(), '.claude', 'plugins', 'cache', 'superpowers-dev', 'superpowers');
+
+/** Resolve the installed superpowers plugin path, or null if not installed. */
+export function resolveSuperpowersDir(): string | null {
+  const matches = globSync('*/', { cwd: SUPERPOWERS_CACHE });
+  if (matches.length === 0) return null;
+  // Sort descending to pick the latest version
+  matches.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+  return join(SUPERPOWERS_CACHE, matches[0]);
+}
+
+/** Install the superpowers plugin via Claude CLI. Returns true on success. */
+export async function installSuperpowers(): Promise<boolean> {
+  const proc = Bun.spawn(['claude', 'plugin', 'install', 'superpowers@superpowers-dev'], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+  return (await proc.exited) === 0;
+}
+
+/** Resolve superpowers path, auto-installing if needed. */
+export async function ensureSuperpowers(): Promise<string | null> {
+  let dir = resolveSuperpowersDir();
+  if (dir) return dir;
+  await installSuperpowers();
+  return resolveSuperpowersDir();
+}
 
 export function buildPrompt(
   identifier: string,
@@ -53,7 +83,7 @@ export function buildFreshArgs(opts: {
   prompt: string;
   maxTurns: number;
   allowedTools: string;
-  pluginDir?: string;
+  pluginDirs?: string[];
 }): string[] {
   const args = [
     'claude',
@@ -62,7 +92,9 @@ export function buildFreshArgs(opts: {
     '--max-turns', String(opts.maxTurns),
     '--allowedTools', opts.allowedTools,
   ];
-  if (opts.pluginDir) args.push('--plugin-dir', opts.pluginDir);
+  for (const dir of opts.pluginDirs ?? []) {
+    args.push('--plugin-dir', dir);
+  }
   return args;
 }
 
@@ -70,7 +102,7 @@ export function buildResumeArgs(opts: {
   sessionId: string;
   maxTurns: number;
   allowedTools: string;
-  pluginDir?: string;
+  pluginDirs?: string[];
 }): string[] {
   const args = [
     'claude',
@@ -79,7 +111,9 @@ export function buildResumeArgs(opts: {
     '--max-turns', String(opts.maxTurns),
     '--allowedTools', opts.allowedTools,
   ];
-  if (opts.pluginDir) args.push('--plugin-dir', opts.pluginDir);
+  for (const dir of opts.pluginDirs ?? []) {
+    args.push('--plugin-dir', dir);
+  }
   return args;
 }
 
@@ -89,12 +123,12 @@ export function spawnClaude(opts: {
   worktreeDir: string;
   maxTurns: number;
   allowedTools: string;
-  pluginDir?: string;
+  pluginDirs?: string[];
   onLog: (line: string) => void;
 }): { process: ReturnType<typeof Bun.spawn>; result: Promise<ClaudeResult> } {
   const args = opts.sessionId
-    ? buildResumeArgs({ sessionId: opts.sessionId, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools, pluginDir: opts.pluginDir })
-    : buildFreshArgs({ prompt: opts.prompt!, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools, pluginDir: opts.pluginDir });
+    ? buildResumeArgs({ sessionId: opts.sessionId, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools, pluginDirs: opts.pluginDirs })
+    : buildFreshArgs({ prompt: opts.prompt!, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools, pluginDirs: opts.pluginDirs });
 
   const proc = Bun.spawn(args, {
     cwd: opts.worktreeDir,

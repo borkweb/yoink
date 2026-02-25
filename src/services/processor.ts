@@ -3,7 +3,7 @@ import { homedir } from 'os';
 import type { Config, TrackedIssue, IssueStatus, ProjectConfig } from '../types';
 import { fetchIssues, updateIssueState, addComment } from './linear';
 import { createWorktree, removeWorktree, deleteBranch, worktreeDirFor } from '../lib/git';
-import { buildPrompt, spawnClaude, YOINK_ROOT } from './claude';
+import { buildPrompt, spawnClaude, YOINK_ROOT, ensureSuperpowers } from './claude';
 import { loadState, saveIssueState, pruneState, saveState } from './state';
 
 export type ProcessorEvent =
@@ -25,6 +25,7 @@ export class Processor {
     | { type: 'all' }
     | null = null;
   private statePath: string;
+  private pluginDirs: string[] = [YOINK_ROOT];
 
   constructor(
     private config: Config,
@@ -163,7 +164,11 @@ export class Processor {
     this.emit({ type: 'update', issues: this.getIssues() });
   }
 
-  start(): void {
+  async start(): Promise<void> {
+    const superpowersDir = await ensureSuperpowers();
+    if (superpowersDir) {
+      this.pluginDirs = [YOINK_ROOT, superpowersDir];
+    }
     this.processQueue();
     this.schedulePoll();
   }
@@ -415,7 +420,7 @@ export class Processor {
         worktreeDir,
         maxTurns: this.config.defaults.maxTurns,
         allowedTools: project.allowedTools,
-        pluginDir: YOINK_ROOT,
+        pluginDirs: this.pluginDirs,
         onLog: (line) => {
           tracked.logs.push(line);
           if (tracked.logs.length > 500) tracked.logs.shift();
@@ -488,7 +493,7 @@ export class Processor {
         worktreeDir: tracked.worktreeDir!,
         maxTurns: this.config.defaults.maxTurns,
         allowedTools: project.allowedTools,
-        pluginDir: YOINK_ROOT,
+        pluginDirs: this.pluginDirs,
         onLog: (line) => {
           tracked.logs.push(line);
           if (tracked.logs.length > 500) tracked.logs.shift();

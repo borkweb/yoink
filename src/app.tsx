@@ -63,7 +63,7 @@ export function App({ projectName, singleIssue, all, dryRun, concurrency }: Prop
         process.on('SIGINT', onTerminate);
 
         if (!dryRun) {
-          proc.start();
+          await proc.start();
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));

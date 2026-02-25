@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { buildPrompt, extractSessionId, buildResumeArgs, buildFreshArgs } from './claude';
+import { buildPrompt, extractSessionId, buildResumeArgs, buildFreshArgs, resolveSuperpowersDir } from './claude';
 import type { ProjectConfig } from '../types';
 
 const project: ProjectConfig = {
@@ -53,5 +53,27 @@ describe('buildFreshArgs', () => {
     expect(args).toContain('-p');
     expect(args).toContain('do stuff');
     expect(args).not.toContain('--resume');
+  });
+
+  it('includes multiple --plugin-dir flags', () => {
+    const args = buildFreshArgs({
+      prompt: 'do stuff',
+      maxTurns: 50,
+      allowedTools: 'Read,Write',
+      pluginDirs: ['/path/to/yoink', '/path/to/superpowers'],
+    });
+    const pluginDirIndices = args
+      .map((a, i) => (a === '--plugin-dir' ? i : -1))
+      .filter((i) => i !== -1);
+    expect(pluginDirIndices).toHaveLength(2);
+    expect(args[pluginDirIndices[0] + 1]).toBe('/path/to/yoink');
+    expect(args[pluginDirIndices[1] + 1]).toBe('/path/to/superpowers');
+  });
+});
+
+describe('resolveSuperpowersDir', () => {
+  it('returns a string or null', () => {
+    const result = resolveSuperpowersDir();
+    expect(result === null || typeof result === 'string').toBe(true);
   });
 });

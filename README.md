@@ -12,6 +12,15 @@ A CLI tool that fetches Linear issues and processes them with Claude Code — cr
 
 Multiple issues run concurrently. Running issues can be stopped mid-execution. Failed and stopped issues persist across restarts and can be retried, continued (via Claude's `--resume`), or abandoned. All finished tickets show a copy-paste `claude --resume` command for interactive follow-up.
 
+## Prerequisites
+
+- [Bun](https://bun.sh/) runtime
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
+- The [superpowers](https://github.com/obra/superpowers) Claude Code plugin — yoink auto-installs this on first run if missing, or install manually:
+  ```bash
+  claude plugin install superpowers@superpowers-dev
+  ```
+
 ## Installation
 
 ```bash
@@ -82,11 +91,14 @@ Expanding a finished ticket shows a `claude --resume` command you can copy-paste
 
 ## Skills
 
-Yoink is structured as a Claude Code plugin. When spawning Claude, it passes `--plugin-dir` pointing at the yoink project root, making three skills available to every spawned instance:
+Yoink is structured as a Claude Code plugin. When spawning Claude, it passes two `--plugin-dir` flags — one for yoink's own skills and one for the [superpowers](https://github.com/obra/superpowers) plugin — making the following skills available to every spawned instance:
 
-- **yoink-workflow** — end-to-end Linear issue flow: understand the issue, explore the codebase, implement, commit, push, and create a PR
-- **yoink-quality-gates** — pre-commit checklist: run tests, lint, review the diff, check scope, validate the commit message
-- **yoink-standards** — engineering principles: small focused changes, follow existing patterns, no drive-by improvements, no leftover artifacts
+**Yoink skills:**
+- **workflow** — end-to-end Linear issue flow: understand the issue, explore the codebase, implement, code review, commit, push, and create a PR
+- **quality-gates** — pre-commit checklist: run tests, lint, review the diff, check scope, validate the commit message
+- **standards** — engineering principles: small focused changes, follow existing patterns, no drive-by improvements, no leftover artifacts
+
+**Superpowers skills** (TDD, debugging, code review, etc.) — the workflow dispatches the `superpowers:code-reviewer` subagent before committing to catch issues early.
 
 Skills live in `skills/` and are defined as `SKILL.md` files with YAML frontmatter. Claude auto-discovers and invokes them based on context. The prompt only provides issue context and project config — the skills handle the workflow.
 
