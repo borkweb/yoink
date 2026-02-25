@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { buildPrompt, extractSessionId, buildResumeArgs, buildFreshArgs, resolveSuperpowersDir } from './claude';
+import { buildPrompt, extractSessionId, buildResumeArgs, buildFreshArgs, resolveSuperpowersDir, buildReviewPrompt } from './claude';
 import type { ProjectConfig } from '../types';
 
 const project: ProjectConfig = {
@@ -75,5 +75,27 @@ describe('resolveSuperpowersDir', () => {
   it('returns a string or null', () => {
     const result = resolveSuperpowersDir();
     expect(result === null || typeof result === 'string').toBe(true);
+  });
+});
+
+describe('buildReviewPrompt', () => {
+  it('includes PR metadata and review skill reference', () => {
+    const prompt = buildReviewPrompt({
+      prNumber: 42,
+      title: 'Fix login bug',
+      body: 'Fixes the auth flow',
+      baseBranch: 'main',
+      headBranch: 'fix/login',
+      githubCommand: 'gh',
+      repoSlug: 'acme/repo',
+    });
+
+    expect(prompt).toContain('PR #42');
+    expect(prompt).toContain('Fix login bug');
+    expect(prompt).toContain('Fixes the auth flow');
+    expect(prompt).toContain('main');
+    expect(prompt).toContain('review');
+    expect(prompt).toContain('gh');
+    expect(prompt).toContain('acme/repo');
   });
 });

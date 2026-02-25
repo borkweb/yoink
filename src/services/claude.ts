@@ -63,6 +63,37 @@ Do NOT add \`Co-Authored-By: Claude\` to commit messages.
 You MUST create a pull request — pushing code without a PR is not sufficient.`;
 }
 
+export function buildReviewPrompt(opts: {
+  prNumber: number;
+  title: string;
+  body: string;
+  baseBranch: string;
+  headBranch: string;
+  githubCommand: string;
+  repoSlug?: string;
+}): string {
+  const repoFlag = opts.repoSlug ? ` -R ${opts.repoSlug}` : '';
+  return `You are reviewing PR #${opts.prNumber}.
+
+**PR title:** ${opts.title}
+
+**PR description:**
+${opts.body}
+
+## Configuration
+
+- GitHub CLI command: \`${opts.githubCommand}\` (use this for ALL GitHub operations)
+- Repository: ${opts.repoSlug ?? '(local)'}
+- Base branch: \`${opts.baseBranch}\`
+- Head branch: \`${opts.headBranch}\`
+- Post comment command: \`${opts.githubCommand} pr comment ${opts.prNumber}${repoFlag}\`
+
+## What To Do
+
+Follow the \`review\` skill to review this PR and post the result as a comment.
+Do NOT create commits, branches, or new PRs — this is a read-only review.`;
+}
+
 export interface ClaudeResult {
   prUrl: string | null;
   sessionId: string | null;
