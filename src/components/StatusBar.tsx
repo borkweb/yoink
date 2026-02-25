@@ -12,7 +12,7 @@ interface Props {
 export function StatusBar({ issues, paused, startedAt, nextPollAt }: Props) {
   const done = issues.filter((i) => i.status === 'pr-created').length;
   const running = issues.filter(
-    (i) => i.status === 'running-claude' || i.status === 'creating-worktree' || i.status === 'pushing'
+    (i) => i.status === 'running-claude' || i.status === 'creating-worktree' || i.status === 'pushing' || i.status === 'reviewing'
   ).length;
   const failed = issues.filter((i) => i.status === 'failed').length;
   const stopped = issues.filter((i) => i.status === 'stopped').length;

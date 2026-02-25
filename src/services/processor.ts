@@ -205,7 +205,7 @@ export class Processor {
     const tracked = this.issues.find((i) => i.issue.identifier === identifier);
     if (!tracked) return;
 
-    const activeStatuses = ['running-claude', 'creating-worktree', 'pushing'];
+    const activeStatuses = ['running-claude', 'creating-worktree', 'pushing', 'reviewing'];
     if (!activeStatuses.includes(tracked.status)) return;
 
     // Set stopped before killing so catch blocks preserve this status
