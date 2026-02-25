@@ -34,7 +34,7 @@ describe('parseConfig', () => {
     expect(p.baseBranch).toBe('main');
     expect(p.linearTeam).toBe('APP');
     expect(p.githubCommand).toBe('gh');
-    expect(p.allowedTools).toBe('Read,Write');
+    expect(p.allowedTools).toBe('Read,Write,Bash(gh *)');
   });
 
   it('applies defaults when optional fields missing', () => {
@@ -53,6 +53,7 @@ linear_label = "Auto"
     expect(config.defaults.maxTurns).toBe(100);
     expect(config.projects.x.baseBranch).toBe('main');
     expect(config.projects.x.githubCommand).toBe('gh');
+    expect(config.projects.x.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Bash,Bash(gh *)');
   });
 
   it('throws on missing api_key', () => {

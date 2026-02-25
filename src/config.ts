@@ -40,6 +40,15 @@ export function parseConfig(toml: string): Config {
   }
 
   for (const [name, p] of Object.entries(projects)) {
+    const githubCommand = p.github_command ?? 'gh';
+    let allowedTools = p.allowed_tools ?? 'Read,Edit,Write,Glob,Grep,Bash';
+
+    // Auto-add Bash(<githubCommand> *) so PR creation is always approved
+    const ghPattern = `Bash(${githubCommand} *)`;
+    if (!allowedTools.includes(ghPattern)) {
+      allowedTools += `,${ghPattern}`;
+    }
+
     config.projects[name] = {
       name,
       repoDir: p.repo_dir,
@@ -47,8 +56,8 @@ export function parseConfig(toml: string): Config {
       linearTeam: p.linear_team,
       linearAssignee: p.linear_assignee,
       linearLabel: p.linear_label,
-      githubCommand: p.github_command ?? 'gh',
-      allowedTools: p.allowed_tools ?? 'Read,Edit,Write,Glob,Grep,Bash',
+      githubCommand,
+      allowedTools,
       linearApiKey: p.linear_api_key,
     };
   }
