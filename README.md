@@ -6,7 +6,7 @@ A CLI tool that fetches Linear issues and processes them with Claude Code — cr
 
 1. Fetches issues from Linear (filtered by team, assignee, label, state=Todo)
 2. Creates an isolated git worktree per issue
-3. Spawns Claude Code to implement the fix, run tests, commit, and create a PR
+3. Spawns Claude Code with yoink's skills plugin (`--plugin-dir`) to implement the fix, run tests, commit, and create a PR
 4. Updates Linear issue state throughout (Todo → In Progress → In Review)
 5. Cleans up worktrees after successful PRs
 
@@ -76,6 +76,18 @@ The terminal UI shows a live view of all issues with keyboard controls:
 | `d`       | Delete failed issue (clean up, abandon)   |
 | `p`       | Pause/resume processing                   |
 | `q`       | Graceful shutdown                         |
+
+## Skills
+
+Yoink is structured as a Claude Code plugin. When spawning Claude, it passes `--plugin-dir` pointing at the yoink project root, making three skills available to every spawned instance:
+
+- **yoink-workflow** — end-to-end Linear issue flow: understand the issue, explore the codebase, implement, commit, push, and create a PR
+- **yoink-quality-gates** — pre-commit checklist: run tests, lint, review the diff, check scope, validate the commit message
+- **yoink-standards** — engineering principles: small focused changes, follow existing patterns, no drive-by improvements, no leftover artifacts
+
+Skills live in `skills/` and are defined as `SKILL.md` files with YAML frontmatter. Claude auto-discovers and invokes them based on context. The prompt only provides issue context and project config — the skills handle the workflow.
+
+Spawned instances also inherit skills from the target project's `.claude/skills/` directory and the user's global plugins.
 
 ## State Persistence
 

@@ -17,6 +17,12 @@
 
 ```
 bin/yoink.ts              CLI entry point (executable)
+.claude-plugin/
+  plugin.json              plugin metadata (loaded via --plugin-dir)
+skills/
+  yoink-workflow/          end-to-end Linear issue flow (understand → implement → PR)
+  yoink-quality-gates/     pre-commit checklist (tests, lint, diff review, scope)
+  yoink-standards/         engineering principles (small changes, follow patterns)
 src/
   index.tsx               meow CLI setup, renders App (or SetupWizard if no config)
   app.tsx                 App component (initialization, history loading)
