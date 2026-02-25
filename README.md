@@ -10,7 +10,7 @@ A CLI tool that fetches Linear issues and processes them with Claude Code — cr
 4. Updates Linear issue state throughout (Todo → In Progress → In Review)
 5. Cleans up worktrees after successful PRs
 
-Multiple issues run concurrently. Failed issues persist across restarts and can be retried, continued (via Claude's `--resume`), or abandoned.
+Multiple issues run concurrently. Running issues can be stopped mid-execution. Failed and stopped issues persist across restarts and can be retried, continued (via Claude's `--resume`), or abandoned. All finished tickets show a copy-paste `claude --resume` command for interactive follow-up.
 
 ## Installation
 
@@ -67,15 +67,18 @@ yoink projects               # list configured projects
 
 The terminal UI shows a live view of all issues with keyboard controls:
 
-| Key       | Action                                    |
-|-----------|-------------------------------------------|
-| `j` / `k` | Navigate up/down                         |
-| `Enter`   | Expand/collapse issue logs                |
-| `r`       | Retry failed issue (clean worktree, restart) |
-| `c`       | Continue failed issue (resume Claude session) |
-| `d`       | Delete failed issue (clean up, abandon)   |
-| `p`       | Pause/resume processing                   |
-| `q`       | Graceful shutdown                         |
+| Key       | Action                                         |
+|-----------|------------------------------------------------|
+| `j` / `k` | Navigate up/down                              |
+| `Enter`   | Expand/collapse issue logs                     |
+| `s`       | Stop running issue (kills Claude process)      |
+| `r`       | Retry failed/stopped issue (clean worktree, restart) |
+| `c`       | Continue failed/stopped issue (resume Claude session) |
+| `d`       | Delete failed/stopped issue (clean up, abandon) |
+| `p`       | Pause/resume processing                        |
+| `q`       | Graceful shutdown                              |
+
+Expanding a finished ticket shows a `claude --resume` command you can copy-paste to continue the session interactively in your terminal.
 
 ## Skills
 
@@ -91,7 +94,7 @@ Spawned instances also inherit skills from the target project's `.claude/skills/
 
 ## State Persistence
 
-Issue state is saved to `~/.config/yoink/state.json`. On startup, issues from the last 24 hours are shown in a history section. Failed issues can be acted on immediately.
+Issue state is saved to `~/.config/yoink/state.json`. On startup, issues from the last 24 hours are shown in a history section. Failed and stopped issues can be acted on immediately.
 
 ## Development
 

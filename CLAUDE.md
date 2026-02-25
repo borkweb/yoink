@@ -33,10 +33,10 @@ src/
     InitOverwrite.tsx      overwrite confirmation when running `yoink init` with existing config
     Dashboard.tsx          main TUI — issue list, keyboard input, sections
     IssueRow.tsx           single issue row with status icon and timing
-    LogPanel.tsx           expandable log viewer with action hints
+    LogPanel.tsx           expandable log viewer with action hints and resume commands
     StatusBar.tsx          bottom bar with counts, elapsed time, help
   services/
-    processor.ts           core orchestration — queue, concurrency, retry/continue/delete
+    processor.ts           core orchestration — queue, concurrency, stop/retry/continue/delete
     claude.ts              Claude CLI spawning, prompt building, output parsing
     linear.ts              Linear GraphQL API client
     state.ts               JSON state persistence (~/.config/yoink/state.json)
@@ -71,12 +71,15 @@ Tests use `bun:test` with `describe`/`it`/`expect`. Test files live alongside so
 
 ```
 queued → creating-worktree → running-claude → pr-created
-                                            → failed → (retry | continue | abandoned)
+                                            → failed  → (retry | continue | abandoned)
+                                            → stopped → (retry | continue | abandoned)
 ```
+
+All terminal statuses (`pr-created`, `failed`, `stopped`, `abandoned`) show a `claude --resume` command when a sessionId exists.
 
 ## Key Types
 
-- `IssueStatus`: `'queued' | 'creating-worktree' | 'running-claude' | 'pushing' | 'pr-created' | 'failed' | 'abandoned'`
+- `IssueStatus`: `'queued' | 'creating-worktree' | 'running-claude' | 'pushing' | 'pr-created' | 'failed' | 'stopped' | 'abandoned'`
 - `TrackedIssue`: the central data structure — issue metadata, status, logs, sessionId, worktreeDir, prUrl
 - `Config` / `ProjectConfig`: typed config from TOML
 - `ProcessorEvent`: event union emitted to the UI
