@@ -1,5 +1,5 @@
 ---
-name: yoink-standards
+name: standards
 description: Use when implementing code changes — engineering principles for writing clean, focused, production-quality code. Invoke this when starting implementation work.
 ---
 

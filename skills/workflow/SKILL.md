@@ -1,5 +1,5 @@
 ---
-name: yoink-workflow
+name: workflow
 description: Use when working on a Linear issue in a git worktree — guides the end-to-end flow from understanding the issue through creating a pull request. Triggers when you see a Linear issue identifier, title, and description in your prompt.
 ---
 
@@ -20,8 +20,11 @@ You are an autonomous coding agent working on a Linear issue. Follow this workfl
 ## 3. Implement
 - Make the minimal changes needed to address the issue
 - Follow existing code patterns — match the style of surrounding code
-- Invoke the `yoink-standards` skill for engineering principles
-- Invoke the `yoink-quality-gates` skill before committing
+- Invoke the `standards` skill for engineering principles
+- Invoke the `quality-gates` skill before committing
+
+## 4. Code Review
+- Invoke the `requesting-code-review` skill for code review
 
 ## 4. Commit
 - Create a conventional commit message referencing the issue identifier

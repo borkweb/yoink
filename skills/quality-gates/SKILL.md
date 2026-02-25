@@ -1,5 +1,5 @@
 ---
-name: yoink-quality-gates
+name: quality-gates
 description: Use before committing or pushing code — a self-review checklist that verifies tests pass, code is clean, and changes are ready for review. Invoke this after implementing changes and before creating commits.
 ---
 

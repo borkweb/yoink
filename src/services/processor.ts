@@ -344,7 +344,7 @@ export class Processor {
       if (!next) break;
 
       this.activeCount++;
-      next.status = 'creating-worktree';
+      this.updateIssue(next, { status: 'creating-worktree' });
       this.processIssue(next).finally(() => {
         this.activeCount--;
         this.processQueue();
