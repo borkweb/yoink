@@ -34,7 +34,7 @@ describe('parseConfig', () => {
     expect(p.baseBranch).toBe('main');
     expect(p.linearTeam).toBe('APP');
     expect(p.githubCommand).toBe('gh');
-    expect(p.allowedTools).toBe('Read,Write,Bash(git *),Bash(gh *)');
+    expect(p.allowedTools).toBe('Read,Write,Skill,Task,Bash(git *),Bash(gh *)');
   });
 
   it('applies defaults when optional fields missing', () => {
@@ -53,7 +53,7 @@ linear_label = "Auto"
     expect(config.defaults.maxTurns).toBe(100);
     expect(config.projects.x.baseBranch).toBe('main');
     expect(config.projects.x.githubCommand).toBe('gh');
-    expect(config.projects.x.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(gh *)');
+    expect(config.projects.x.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Skill,Task,Bash,Bash(git *),Bash(gh *)');
   });
 
   it('throws on missing api_key', () => {
@@ -91,7 +91,7 @@ linear_team = "TEAM"
 linear_assignee = "johndoe"
 linear_label = "AI Automation"
 github_command = "gh"
-allowed_tools = "Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)"
+allowed_tools = "Read,Edit,Write,Glob,Grep,Skill,Task,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)"
 `;
     const config = parseConfig(wizardOutput);
     expect(config.linear.apiKey).toBe('lin_api_abc123');
@@ -107,6 +107,6 @@ allowed_tools = "Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bas
     expect(p.linearAssignee).toBe('johndoe');
     expect(p.linearLabel).toBe('AI Automation');
     expect(p.githubCommand).toBe('gh');
-    expect(p.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)');
+    expect(p.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Skill,Task,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)');
   });
 });

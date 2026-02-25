@@ -41,10 +41,12 @@ export function parseConfig(toml: string): Config {
 
   for (const [name, p] of Object.entries(projects)) {
     const githubCommand = p.github_command ?? 'gh';
-    let allowedTools = p.allowed_tools ?? 'Read,Edit,Write,Glob,Grep,Bash';
+    let allowedTools = p.allowed_tools ?? 'Read,Edit,Write,Glob,Grep,Skill,Task,Bash';
 
-    // Auto-add essential Bash patterns so core workflow commands are always approved
+    // Auto-add essential patterns so core workflow commands are always approved
     const requiredPatterns = [
+      'Skill',
+      'Task',
       'Bash(git *)',
       `Bash(${githubCommand} *)`,
     ];
