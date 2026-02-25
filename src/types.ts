@@ -4,6 +4,8 @@ export type IssueStatus =
   | 'running-claude'
   | 'pushing'
   | 'pr-created'
+  | 'reviewing'
+  | 'review-posted'
   | 'failed'
   | 'stopped'
   | 'abandoned';
@@ -31,6 +33,7 @@ export interface TrackedIssue {
   startedAt?: number;
   completedAt?: number;
   worktreeDir?: string;
+  prNumber?: number;
 }
 
 export interface ProjectConfig {
