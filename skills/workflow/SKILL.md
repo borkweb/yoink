@@ -39,6 +39,7 @@ You are an autonomous coding agent working on a Linear issue. Follow this workfl
   - **Important** issues: fix before proceeding
   - **Minor** issues: fix if quick, otherwise note for later
   - Push back with technical reasoning if the reviewer is wrong
+- Repeat the Code Review process until there aren't any issues that must be fixed
 
 ## 5. Commit
 - Create a conventional commit message referencing the issue identifier

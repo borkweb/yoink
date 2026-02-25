@@ -12,6 +12,7 @@
 - **Config**: TOML via `smol-toml`
 - **CLI**: `meow`
 - **Testing**: `bun test` (built-in test runner)
+- **Plugin dependency**: [superpowers](https://github.com/obra/superpowers) — resolved from `~/.claude/plugins/cache/` at runtime, auto-installed if missing. Provides TDD, debugging, and code review skills to spawned Claude instances (passed as a second `--plugin-dir`).
 
 ## Project Structure
 
@@ -20,9 +21,9 @@ bin/yoink.ts              CLI entry point (executable)
 .claude-plugin/
   plugin.json              plugin metadata (loaded via --plugin-dir)
 skills/
-  yoink-workflow/          end-to-end Linear issue flow (understand → implement → PR)
-  yoink-quality-gates/     pre-commit checklist (tests, lint, diff review, scope)
-  yoink-standards/         engineering principles (small changes, follow patterns)
+  workflow/                end-to-end Linear issue flow (understand → implement → review → PR)
+  quality-gates/           pre-commit checklist (tests, lint, diff review, scope)
+  standards/               engineering principles (small changes, follow patterns)
 src/
   index.tsx               meow CLI setup, renders App (or SetupWizard if no config)
   app.tsx                 App component (initialization, history loading)
@@ -37,7 +38,7 @@ src/
     StatusBar.tsx          bottom bar with counts, elapsed time, help
   services/
     processor.ts           core orchestration — queue, concurrency, stop/retry/continue/delete
-    claude.ts              Claude CLI spawning, prompt building, output parsing
+    claude.ts              Claude CLI spawning, prompt building, output parsing, superpowers plugin resolution
     linear.ts              Linear GraphQL API client
     state.ts               JSON state persistence (~/.config/yoink/state.json)
   lib/

@@ -6,7 +6,7 @@ A CLI tool that fetches Linear issues and processes them with Claude Code — cr
 
 1. Fetches issues from Linear (filtered by team, assignee, label, state=Todo)
 2. Creates an isolated git worktree per issue
-3. Spawns Claude Code with yoink's skills plugin (`--plugin-dir`) to implement the fix, run tests, commit, and create a PR
+3. Spawns Claude Code with yoink + superpowers plugins (`--plugin-dir`) to implement the fix, run tests, review, commit, and create a PR
 4. Updates Linear issue state throughout (Todo → In Progress → In Review)
 5. Cleans up worktrees after successful PRs
 
