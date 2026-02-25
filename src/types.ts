@@ -21,6 +21,7 @@ export interface LinearIssue {
 export interface TrackedIssue {
   issue: LinearIssue;
   project: string;
+  repoDir?: string;
   status: IssueStatus;
   logs: string[];
   sessionId?: string;

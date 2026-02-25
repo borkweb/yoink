@@ -1,10 +1,33 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import { existsSync } from 'fs';
+import { homedir } from 'os';
 import type { TrackedIssue } from '../types';
 
 interface Props {
   tracked: TrackedIssue;
   maxLines?: number;
+}
+
+function tildify(path: string): string {
+  const home = homedir();
+  return path.startsWith(home) ? '~' + path.slice(home.length) : path;
+}
+
+function resumeCommand(tracked: TrackedIssue): string {
+  const resume = `claude --resume ${tracked.sessionId}`;
+  if (!tracked.worktreeDir) return resume;
+
+  const wtPath = tildify(tracked.worktreeDir);
+
+  if (existsSync(tracked.worktreeDir)) {
+    return `cd ${wtPath} && ${resume}`;
+  }
+
+  const branch = `linear/${tracked.issue.identifier.toLowerCase()}`;
+  const repoPath = tracked.repoDir ? tildify(tracked.repoDir) : '';
+  const cdToRepo = repoPath ? `cd ${repoPath} && ` : '';
+  return `${cdToRepo}git worktree add ${wtPath} ${branch} && cd ${wtPath} && ${resume}`;
 }
 
 export function LogPanel({ tracked, maxLines = 10 }: Props) {
@@ -50,7 +73,7 @@ export function LogPanel({ tracked, maxLines = 10 }: Props) {
       {['pr-created', 'failed', 'stopped', 'abandoned'].includes(status) && tracked.sessionId && (
         <Box>
           <Text dimColor>
-            {'\u2503'} Resume: {tracked.worktreeDir ? `cd ${tracked.worktreeDir} && ` : ''}claude --resume {tracked.sessionId}
+            {'\u2503'} Resume: {resumeCommand(tracked)}
           </Text>
         </Box>
       )}

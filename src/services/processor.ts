@@ -62,6 +62,7 @@ export class Processor {
     const projectState = state.sessions[project];
     if (!projectState) return [];
 
+    const projectConfig = this.config.projects[project];
     return Object.entries(projectState.issues).map(([identifier, persisted]) => ({
       issue: {
         id: '',
@@ -73,6 +74,7 @@ export class Processor {
         state: { name: '', type: '' },
       },
       project,
+      repoDir: projectConfig?.repoDir,
       status: persisted.status as IssueStatus,
       logs: [],
       prUrl: persisted.prUrl ?? undefined,
@@ -102,6 +104,7 @@ export class Processor {
     this.issues = linearIssues.map((issue) => ({
       issue,
       project: projectName,
+      repoDir: project.repoDir,
       status: 'queued' as IssueStatus,
       logs: [],
     }));
@@ -130,6 +133,7 @@ export class Processor {
           allIssues.push({
             issue,
             project: name,
+            repoDir: project.repoDir,
             status: 'queued',
             logs: [],
           });
@@ -146,6 +150,7 @@ export class Processor {
             state: { name: 'Error', type: 'error' },
           },
           project: name,
+          repoDir: project.repoDir,
           status: 'failed',
           logs: [],
           error: err instanceof Error ? err.message : String(err),
@@ -296,7 +301,7 @@ export class Processor {
             for (const issue of linearIssues) {
               if (!this.seenIssueIds.has(issue.id)) {
                 this.seenIssueIds.add(issue.id);
-                newIssues.push({ issue, project: name, status: 'queued', logs: [] });
+                newIssues.push({ issue, project: name, repoDir: project.repoDir, status: 'queued', logs: [] });
               }
             }
           } catch {}
@@ -309,7 +314,7 @@ export class Processor {
           for (const issue of linearIssues) {
             if (!this.seenIssueIds.has(issue.id)) {
               this.seenIssueIds.add(issue.id);
-              newIssues.push({ issue, project: this.pollContext.project, status: 'queued', logs: [] });
+              newIssues.push({ issue, project: this.pollContext.project, repoDir: project.repoDir, status: 'queued', logs: [] });
             }
           }
         } catch {}
