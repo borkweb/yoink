@@ -21,7 +21,9 @@ bun link
 
 ## Configuration
 
-Copy the example config and edit it:
+Run `yoink init` (or just run `yoink` with no config) to launch the interactive setup wizard. It will prompt for your Linear API key, project details, and optionally advanced settings, then write the config to `~/.config/yoink/config.toml`.
+
+Alternatively, copy the example config and edit it manually:
 
 ```bash
 mkdir -p ~/.config/yoink
@@ -56,6 +58,7 @@ yoink <project>              # process all matching issues for a project
 yoink <project> TEAM-123     # process a single issue
 yoink --all                  # process all configured projects
 yoink --dry-run              # fetch and display issues without processing
+yoink init                   # run the setup wizard (auto-runs on first launch)
 yoink config                 # open config file in $EDITOR
 yoink projects               # list configured projects
 ```

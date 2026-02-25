@@ -2,13 +2,16 @@ import React from 'react';
 import { render } from 'ink';
 import meow from 'meow';
 import { App } from './app';
-import { getConfigPath } from './config';
+import { getConfigPath, configExists } from './config';
+import { SetupWizard } from './components/SetupWizard';
+import { InitOverwrite } from './components/InitOverwrite';
 
 const cli = meow(
   `
   Usage
     $ yoink <project> [issue]     Process issues for a project
     $ yoink --all                 Process all projects
+    $ yoink init                  Run the setup wizard
     $ yoink config                Show config file path
     $ yoink projects              List configured projects
 
@@ -32,6 +35,27 @@ const cli = meow(
     },
   }
 );
+
+// Handle "init" subcommand
+if (cli.input[0] === 'init') {
+  if (configExists()) {
+    const { waitUntilExit } = render(<InitOverwrite />);
+    await waitUntilExit();
+  } else {
+    const { waitUntilExit } = render(<SetupWizard />);
+    await waitUntilExit();
+  }
+  process.exit(0);
+}
+
+// Auto-detect: no config file exists
+if (cli.input[0] !== 'config' && cli.input[0] !== 'projects') {
+  if (!configExists()) {
+    const { waitUntilExit } = render(<SetupWizard />);
+    await waitUntilExit();
+    process.exit(0);
+  }
+}
 
 // Handle "config" subcommand
 if (cli.input[0] === 'config') {

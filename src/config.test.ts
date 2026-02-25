@@ -73,4 +73,39 @@ api_key = "lin_api_test"
 `;
     expect(() => parseConfig(bad)).toThrow(/project/i);
   });
+
+  it('parses TOML in the format the setup wizard generates', () => {
+    const wizardOutput = `[defaults]
+concurrency = 2
+max_turns = 100
+poll_interval = 30
+
+[linear]
+api_key = "lin_api_abc123"
+
+[projects.myproject]
+repo_dir = "/Users/me/code/myproject"
+base_branch = "main"
+linear_team = "TEAM"
+linear_assignee = "johndoe"
+linear_label = "AI Automation"
+github_command = "gh"
+allowed_tools = "Read,Edit,Write,Glob,Grep,Bash"
+`;
+    const config = parseConfig(wizardOutput);
+    expect(config.linear.apiKey).toBe('lin_api_abc123');
+    expect(config.defaults.concurrency).toBe(2);
+    expect(config.defaults.maxTurns).toBe(100);
+    expect(config.defaults.pollInterval).toBe(30);
+
+    const p = config.projects.myproject;
+    expect(p.name).toBe('myproject');
+    expect(p.repoDir).toBe('/Users/me/code/myproject');
+    expect(p.baseBranch).toBe('main');
+    expect(p.linearTeam).toBe('TEAM');
+    expect(p.linearAssignee).toBe('johndoe');
+    expect(p.linearLabel).toBe('AI Automation');
+    expect(p.githubCommand).toBe('gh');
+    expect(p.allowedTools).toBe('Read,Edit,Write,Glob,Grep,Bash');
+  });
 });

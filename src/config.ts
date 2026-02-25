@@ -4,11 +4,15 @@ import { join } from 'path';
 import { homedir } from 'os';
 import type { Config, ProjectConfig } from './types';
 
-const CONFIG_DIR = join(homedir(), '.config', 'yoink');
-const CONFIG_PATH = join(CONFIG_DIR, 'config.toml');
+export const CONFIG_DIR = join(homedir(), '.config', 'yoink');
+export const CONFIG_PATH = join(CONFIG_DIR, 'config.toml');
 
 export function getConfigPath(): string {
   return CONFIG_PATH;
+}
+
+export function configExists(): boolean {
+  return existsSync(CONFIG_PATH);
 }
 
 export function parseConfig(toml: string): Config {

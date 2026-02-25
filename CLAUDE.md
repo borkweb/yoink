@@ -18,11 +18,13 @@
 ```
 bin/yoink.ts              CLI entry point (executable)
 src/
-  index.tsx               meow CLI setup, renders App
+  index.tsx               meow CLI setup, renders App (or SetupWizard if no config)
   app.tsx                 App component (initialization, history loading)
   types.ts                shared types (TrackedIssue, Config, etc.)
   config.ts               TOML config loading from ~/.config/yoink/config.toml
   components/
+    SetupWizard.tsx        interactive first-run config wizard (Ink + ink-text-input)
+    InitOverwrite.tsx      overwrite confirmation when running `yoink init` with existing config
     Dashboard.tsx          main TUI — issue list, keyboard input, sections
     IssueRow.tsx           single issue row with status icon and timing
     LogPanel.tsx           expandable log viewer with action hints
