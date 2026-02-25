@@ -183,9 +183,23 @@ export class Processor {
     await Promise.all(promises);
   }
 
+  stopIssue(identifier: string): void {
+    const tracked = this.issues.find((i) => i.issue.identifier === identifier);
+    if (!tracked) return;
+
+    const activeStatuses = ['running-claude', 'creating-worktree', 'pushing'];
+    if (!activeStatuses.includes(tracked.status)) return;
+
+    // Set stopped before killing so catch blocks preserve this status
+    this.updateIssue(tracked, { status: 'stopped', completedAt: Date.now() });
+
+    const proc = this.activeProcesses.get(identifier);
+    if (proc) proc.kill();
+  }
+
   retryIssue(identifier: string): void {
     const tracked = this.issues.find((i) => i.issue.identifier === identifier);
-    if (!tracked || tracked.status !== 'failed') return;
+    if (!tracked || (tracked.status !== 'failed' && tracked.status !== 'stopped')) return;
 
     const project = this.config.projects[tracked.project];
     const wtDir = tracked.worktreeDir || worktreeDirFor(project.repoDir, identifier);
@@ -215,7 +229,7 @@ export class Processor {
 
   continueIssue(identifier: string): void {
     const tracked = this.issues.find((i) => i.issue.identifier === identifier);
-    if (!tracked || tracked.status !== 'failed') return;
+    if (!tracked || (tracked.status !== 'failed' && tracked.status !== 'stopped')) return;
 
     this.updateIssue(tracked, {
       status: 'running-claude',
@@ -233,7 +247,7 @@ export class Processor {
 
   deleteIssue(identifier: string): void {
     const tracked = this.issues.find((i) => i.issue.identifier === identifier);
-    if (!tracked || tracked.status !== 'failed') return;
+    if (!tracked || (tracked.status !== 'failed' && tracked.status !== 'stopped')) return;
 
     const project = this.config.projects[tracked.project];
     const wtDir = tracked.worktreeDir || worktreeDirFor(project.repoDir, identifier);
@@ -436,12 +450,14 @@ export class Processor {
         });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.updateIssue(tracked, {
-        status: 'failed',
-        error: message,
-        completedAt: Date.now(),
-      });
+      if (tracked.status !== 'stopped') {
+        const message = err instanceof Error ? err.message : String(err);
+        this.updateIssue(tracked, {
+          status: 'failed',
+          error: message,
+          completedAt: Date.now(),
+        });
+      }
     }
   }
 
@@ -495,8 +511,10 @@ export class Processor {
         this.updateIssue(tracked, { status: 'failed', error: 'Claude completed but no PR URL was detected', completedAt });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.updateIssue(tracked, { status: 'failed', error: message, completedAt: Date.now() });
+      if (tracked.status !== 'stopped') {
+        const message = err instanceof Error ? err.message : String(err);
+        this.updateIssue(tracked, { status: 'failed', error: message, completedAt: Date.now() });
+      }
     }
   }
 

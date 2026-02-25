@@ -5,6 +5,7 @@ export type IssueStatus =
   | 'pushing'
   | 'pr-created'
   | 'failed'
+  | 'stopped'
   | 'abandoned';
 
 export interface LinearIssue {

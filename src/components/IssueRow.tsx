@@ -20,6 +20,7 @@ const STATUS_DISPLAY: Record<
   pushing: { icon: '', color: 'yellow', label: 'Pushing...', spinning: true },
   'pr-created': { icon: '\u2713', color: 'green', label: 'PR created', spinning: false },
   failed: { icon: '\u2717', color: 'red', label: 'Failed', spinning: false },
+  stopped: { icon: '\u23F9', color: 'yellow', label: 'Stopped', spinning: false },
   abandoned: { icon: '\u25CC', color: 'gray', label: 'Deleted', spinning: false },
 };
 

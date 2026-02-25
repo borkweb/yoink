@@ -27,7 +27,7 @@ export function LogPanel({ tracked, maxLines = 10 }: Props) {
           </Text>
         </Box>
       )}
-      {status === 'failed' && (
+      {(status === 'failed' || status === 'stopped') && (
         <Box marginTop={0}>
           <Text>
             {'\u2503'}{'  '}
@@ -44,6 +44,13 @@ export function LogPanel({ tracked, maxLines = 10 }: Props) {
         <Box>
           <Text color="green">
             {'\u2503'} {tracked.prUrl}
+          </Text>
+        </Box>
+      )}
+      {['pr-created', 'failed', 'stopped', 'abandoned'].includes(status) && tracked.sessionId && (
+        <Box>
+          <Text dimColor>
+            {'\u2503'} Resume: {tracked.worktreeDir ? `cd ${tracked.worktreeDir} && ` : ''}claude --resume {tracked.sessionId}
           </Text>
         </Box>
       )}

@@ -72,9 +72,17 @@ export function Dashboard({ processor, title, dryRun }: Props) {
           return;
         }
 
+        if (input === 's') {
+          const selected = issues[focusIndex];
+          if (selected && ['running-claude', 'creating-worktree', 'pushing'].includes(selected.status)) {
+            processor.stopIssue(selected.issue.identifier);
+          }
+          return;
+        }
+
         if (input === 'r') {
           const selected = issues[focusIndex];
-          if (selected?.status === 'failed') {
+          if (selected?.status === 'failed' || selected?.status === 'stopped') {
             processor.retryIssue(selected.issue.identifier);
           }
           return;
@@ -82,7 +90,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
 
         if (input === 'c') {
           const selected = issues[focusIndex];
-          if (selected?.status === 'failed') {
+          if (selected?.status === 'failed' || selected?.status === 'stopped') {
             processor.continueIssue(selected.issue.identifier);
           }
           return;
@@ -90,7 +98,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
 
         if (input === 'd') {
           const selected = issues[focusIndex];
-          if (selected?.status === 'failed') {
+          if (selected?.status === 'failed' || selected?.status === 'stopped') {
             processor.deleteIssue(selected.issue.identifier);
           }
           return;
