@@ -188,6 +188,13 @@ export class Processor {
     await Promise.all(promises);
   }
 
+  /** Kill all active Claude processes immediately (used on SIGTERM). */
+  killActiveProcesses(): void {
+    for (const proc of this.activeProcesses.values()) {
+      proc.kill('SIGTERM');
+    }
+  }
+
   stopIssue(identifier: string): void {
     const tracked = this.issues.find((i) => i.issue.identifier === identifier);
     if (!tracked) return;

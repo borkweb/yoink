@@ -56,6 +56,12 @@ export function App({ projectName, singleIssue, all, dryRun, concurrency }: Prop
         setProcessor(proc);
         setLoading(false);
 
+        // Kill child Claude processes when yoink is terminated, so they
+        // don't become orphans with broken stdio pipes.
+        const onTerminate = () => proc.killActiveProcesses();
+        process.on('SIGTERM', onTerminate);
+        process.on('SIGINT', onTerminate);
+
         if (!dryRun) {
           proc.start();
         }
