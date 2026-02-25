@@ -1,3 +1,5 @@
+import { splitCommand } from './shell';
+
 export async function createPullRequest(opts: {
   worktreeDir: string;
   branchName: string;
@@ -17,7 +19,7 @@ export async function createPullRequest(opts: {
   }
 
   // Create PR
-  const cmdParts = opts.githubCommand.split(/\s+/);
+  const cmdParts = splitCommand(opts.githubCommand);
   const proc = Bun.spawn(
     [...cmdParts, 'pr', 'create', '--title', opts.title, '--body', opts.body, '--base', opts.baseBranch],
     { cwd: opts.worktreeDir, stdout: 'pipe', stderr: 'pipe' }

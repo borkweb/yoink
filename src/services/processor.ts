@@ -6,6 +6,7 @@ import { createWorktree, removeWorktree, deleteBranch, worktreeDirFor, createRev
 import { buildPrompt, buildReviewPrompt, spawnClaude, YOINK_ROOT, ensureSuperpowers } from './claude';
 import { loadState, saveIssueState, pruneState, saveState } from './state';
 import { fetchPRMetadata } from '../lib/pr';
+import { splitCommand } from '../lib/shell';
 
 export type ProcessorEvent =
   | { type: 'update'; issues: TrackedIssue[] }
@@ -653,7 +654,7 @@ export class Processor {
     if (!match) return;
 
     const [, repo, prNumber] = match;
-    const ghParts = project.githubCommand.split(/\s+/);
+    const ghParts = splitCommand(project.githubCommand);
 
     const viewProc = Bun.spawn(
       [...ghParts, 'pr', 'view', prNumber, '--json', 'title', '-R', repo],

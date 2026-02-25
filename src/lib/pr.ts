@@ -1,3 +1,5 @@
+import { splitCommand } from './shell';
+
 export interface ParsedPR {
   prNumber: number;
   repoSlug: string | null;
@@ -37,7 +39,7 @@ export async function fetchPRMetadata(
   prNumber: number,
   repoSlug?: string
 ): Promise<PRMetadata> {
-  const cmdParts = ghCommand.split(/\s+/);
+  const cmdParts = splitCommand(ghCommand);
   const args = [...cmdParts, 'pr', 'view', String(prNumber), '--json', 'title,body,headRefName,baseRefName'];
   if (repoSlug) args.push('-R', repoSlug);
 
