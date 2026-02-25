@@ -22,6 +22,7 @@ bin/yoink.ts              CLI entry point (executable)
   plugin.json              plugin metadata (loaded via --plugin-dir)
 skills/
   workflow/                end-to-end Linear issue flow (understand → implement → review → PR)
+  review/                  PR code review workflow (dispatch superpowers code-reviewer, post comment)
   quality-gates/           pre-commit checklist (tests, lint, diff review, scope)
   standards/               engineering principles (small changes, follow patterns)
 src/
@@ -42,7 +43,8 @@ src/
     linear.ts              Linear GraphQL API client
     state.ts               JSON state persistence (~/.config/yoink/state.json)
   lib/
-    git.ts                 git worktree create/remove, branch cleanup
+    git.ts                 git worktree create/remove, branch cleanup, review worktree helpers
+    pr.ts                  PR URL parsing and metadata fetching via GitHub CLI
 ```
 
 ## Commands
@@ -74,13 +76,17 @@ Tests use `bun:test` with `describe`/`it`/`expect`. Test files live alongside so
 queued → creating-worktree → running-claude → pr-created
                                             → failed  → (retry | continue | abandoned)
                                             → stopped → (retry | continue | abandoned)
+
+PR reviews (triggered via `v` key):
+creating-worktree → reviewing → review-posted
+                              → failed
 ```
 
-All terminal statuses (`pr-created`, `failed`, `stopped`, `abandoned`) show a `claude --resume` command when a sessionId exists.
+All terminal statuses (`pr-created`, `failed`, `stopped`, `abandoned`) show a `claude --resume` command when a sessionId exists. Review items do not support resume.
 
 ## Key Types
 
-- `IssueStatus`: `'queued' | 'creating-worktree' | 'running-claude' | 'pushing' | 'pr-created' | 'failed' | 'stopped' | 'abandoned'`
-- `TrackedIssue`: the central data structure — issue metadata, status, logs, sessionId, worktreeDir, prUrl
+- `IssueStatus`: `'queued' | 'creating-worktree' | 'running-claude' | 'pushing' | 'pr-created' | 'reviewing' | 'review-posted' | 'failed' | 'stopped' | 'abandoned'`
+- `TrackedIssue`: the central data structure — issue metadata, status, logs, sessionId, worktreeDir, prUrl, prNumber
 - `Config` / `ProjectConfig`: typed config from TOML
 - `ProcessorEvent`: event union emitted to the UI

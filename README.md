@@ -84,6 +84,7 @@ The terminal UI shows a live view of all issues with keyboard controls:
 | `r`       | Retry failed/stopped issue (clean worktree, restart) |
 | `c`       | Continue failed/stopped issue (resume Claude session) |
 | `d`       | Delete failed/stopped issue (clean up, abandon) |
+| `v`       | Review a PR (enter URL or number)              |
 | `p`       | Pause/resume processing                        |
 | `q`       | Graceful shutdown                              |
 
@@ -95,10 +96,11 @@ Yoink is structured as a Claude Code plugin. When spawning Claude, it passes two
 
 **Yoink skills:**
 - **workflow** — end-to-end Linear issue flow: understand the issue, explore the codebase, implement, code review, commit, push, and create a PR
+- **review** — PR code review workflow: dispatch the superpowers code-reviewer subagent, format the output, post it as a PR comment
 - **quality-gates** — pre-commit checklist: run tests, lint, review the diff, check scope, validate the commit message
 - **standards** — engineering principles: small focused changes, follow existing patterns, no drive-by improvements, no leftover artifacts
 
-**Superpowers skills** (TDD, debugging, code review, etc.) — the workflow dispatches the `superpowers:code-reviewer` subagent before committing to catch issues early.
+**Superpowers skills** (TDD, debugging, code review, etc.) — the workflow dispatches the `superpowers:code-reviewer` subagent before committing to catch issues early. The review skill uses it to post automated PR reviews.
 
 Skills live in `skills/` and are defined as `SKILL.md` files with YAML frontmatter. Claude auto-discovers and invokes them based on context. The prompt only provides issue context and project config — the skills handle the workflow.
 
