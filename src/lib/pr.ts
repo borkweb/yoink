@@ -8,9 +8,12 @@ export function parsePRInput(input: string): ParsedPR | null {
   if (!trimmed) return null;
 
   // Full GitHub URL: https://github.com/org/repo/pull/123
-  const urlMatch = trimmed.match(/https?:\/\/[^/]+\/([^/]+\/[^/]+)\/pull\/(\d+)/);
+  const urlMatch = trimmed.match(/https?:\/\/([^/]+)\/([^/]+\/[^/]+)\/pull\/(\d+)/);
   if (urlMatch) {
-    return { prNumber: parseInt(urlMatch[2], 10), repoSlug: urlMatch[1] };
+    const [, host, ownerRepo, prNum] = urlMatch;
+    // For enterprise hosts, gh needs host/owner/repo format for -R flag
+    const repoSlug = host === 'github.com' ? ownerRepo : `${host}/${ownerRepo}`;
+    return { prNumber: parseInt(prNum, 10), repoSlug };
   }
 
   // Bare number

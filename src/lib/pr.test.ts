@@ -7,9 +7,9 @@ describe('parsePRInput', () => {
     expect(result).toEqual({ prNumber: 123, repoSlug: 'acme/repo' });
   });
 
-  it('parses a GitHub Enterprise URL', () => {
+  it('parses a GitHub Enterprise URL with host in repoSlug', () => {
     const result = parsePRInput('https://github.example.com/org/project/pull/456');
-    expect(result).toEqual({ prNumber: 456, repoSlug: 'org/project' });
+    expect(result).toEqual({ prNumber: 456, repoSlug: 'github.example.com/org/project' });
   });
 
   it('parses a bare number', () => {
