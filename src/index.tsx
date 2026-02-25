@@ -5,6 +5,7 @@ import { App } from './app';
 import { getConfigPath, configExists } from './config';
 import { SetupWizard } from './components/SetupWizard';
 import { InitOverwrite } from './components/InitOverwrite';
+import { acquireLock, releaseLock } from './lib/pidlock';
 
 console.log(`
   __   __  ___   ___  _   _  _  __
@@ -98,6 +99,12 @@ if (cli.input[0] === 'projects') {
   }
   process.exit(0);
 }
+
+// Kill any existing yoink instance and claim the lock
+acquireLock();
+process.on('exit', releaseLock);
+process.on('SIGINT', () => { releaseLock(); process.exit(0); });
+process.on('SIGTERM', () => { releaseLock(); process.exit(0); });
 
 // Determine project and issue from positional args
 const [first, second] = cli.input;
