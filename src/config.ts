@@ -43,10 +43,15 @@ export function parseConfig(toml: string): Config {
     const githubCommand = p.github_command ?? 'gh';
     let allowedTools = p.allowed_tools ?? 'Read,Edit,Write,Glob,Grep,Bash';
 
-    // Auto-add Bash(<githubCommand> *) so PR creation is always approved
-    const ghPattern = `Bash(${githubCommand} *)`;
-    if (!allowedTools.includes(ghPattern)) {
-      allowedTools += `,${ghPattern}`;
+    // Auto-add essential Bash patterns so core workflow commands are always approved
+    const requiredPatterns = [
+      'Bash(git *)',
+      `Bash(${githubCommand} *)`,
+    ];
+    for (const pattern of requiredPatterns) {
+      if (!allowedTools.includes(pattern)) {
+        allowedTools += `,${pattern}`;
+      }
     }
 
     config.projects[name] = {
