@@ -3,7 +3,7 @@ import { homedir } from 'os';
 import type { Config, TrackedIssue, IssueStatus, ProjectConfig } from '../types';
 import { fetchIssues, updateIssueState, addComment } from './linear';
 import { createWorktree, removeWorktree, deleteBranch, worktreeDirFor } from '../lib/git';
-import { buildPrompt, spawnClaude } from './claude';
+import { buildPrompt, spawnClaude, YOINK_ROOT } from './claude';
 import { loadState, saveIssueState, pruneState, saveState } from './state';
 
 export type ProcessorEvent =
@@ -389,6 +389,7 @@ export class Processor {
         worktreeDir,
         maxTurns: this.config.defaults.maxTurns,
         allowedTools: project.allowedTools,
+        pluginDir: YOINK_ROOT,
         onLog: (line) => {
           tracked.logs.push(line);
           if (tracked.logs.length > 500) tracked.logs.shift();
@@ -459,6 +460,7 @@ export class Processor {
         worktreeDir: tracked.worktreeDir!,
         maxTurns: this.config.defaults.maxTurns,
         allowedTools: project.allowedTools,
+        pluginDir: YOINK_ROOT,
         onLog: (line) => {
           tracked.logs.push(line);
           if (tracked.logs.length > 500) tracked.logs.shift();

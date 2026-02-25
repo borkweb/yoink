@@ -1,4 +1,8 @@
+import { dirname } from 'path';
 import type { ProjectConfig } from '../types';
+
+/** Absolute path to the yoink project root (used as --plugin-dir) */
+export const YOINK_ROOT = dirname(dirname(import.meta.dir));
 
 export function buildPrompt(
   identifier: string,
@@ -7,7 +11,7 @@ export function buildPrompt(
   url: string,
   project: ProjectConfig
 ): string {
-  return `You are working on a fix for Linear issue ${identifier}.
+  return `You are working on Linear issue ${identifier}.
 
 **Issue title:** ${title}
 
@@ -16,29 +20,17 @@ ${description}
 
 **Linear URL:** ${url}
 
-## Instructions
+## Project Configuration
 
-1. Read the issue carefully and understand what needs to be fixed or implemented.
-2. Explore the codebase to understand the relevant code. Consult CLAUDE.md for project conventions.
-3. Implement the fix or feature as described in the issue.
-4. Run relevant tests and linting to verify your changes.
-5. Perform a thorough code review on the work and fix any problems.
-6. Create a git commit with a conventional commit message referencing the issue:
-   - Example: \`fix(scope): description | ${identifier}\`
-7. Push the branch to origin:
-   - \`git push -u origin HEAD\`
-8. Create a pull request (THIS IS REQUIRED — do not skip):
-   - Run: \`${project.githubCommand} pr create --base ${project.baseBranch} --title "🤖 ${identifier}: <short description>" --body "<body>"\`
-   - The PR body should include: a summary of changes, the Linear issue link (${url}), and a test plan
-   - Verify the PR was created by checking the command output for the PR URL
-9. Output the PR URL as your final message. The URL must match the pattern: https://github.../pull/NUMBER
+- GitHub CLI command: \`${project.githubCommand}\` (use this for ALL GitHub operations, not \`gh\`)
+- Base branch: \`${project.baseBranch}\`
+- Issue identifier for commits: ${identifier}
 
-IMPORTANT:
-- Use \`${project.githubCommand}\` for ALL GitHub CLI operations (not \`gh\`)
-- The base branch is \`${project.baseBranch}\`, not \`main\`
-- Follow existing code conventions in CLAUDE.md
-- Do NOT add \`Co-Authored-By: Claude\` to commit messages
-- You MUST create the pull request. Pushing code without a PR is not sufficient.`;
+## What To Do
+
+Follow the \`yoink-workflow\` skill to complete this issue end-to-end.
+Do NOT add \`Co-Authored-By: Claude\` to commit messages.
+You MUST create a pull request — pushing code without a PR is not sufficient.`;
 }
 
 export interface ClaudeResult {
@@ -61,28 +53,34 @@ export function buildFreshArgs(opts: {
   prompt: string;
   maxTurns: number;
   allowedTools: string;
+  pluginDir?: string;
 }): string[] {
-  return [
+  const args = [
     'claude',
     '-p', opts.prompt,
     '--output-format', 'json',
     '--max-turns', String(opts.maxTurns),
     '--allowedTools', opts.allowedTools,
   ];
+  if (opts.pluginDir) args.push('--plugin-dir', opts.pluginDir);
+  return args;
 }
 
 export function buildResumeArgs(opts: {
   sessionId: string;
   maxTurns: number;
   allowedTools: string;
+  pluginDir?: string;
 }): string[] {
-  return [
+  const args = [
     'claude',
     '--resume', opts.sessionId,
     '--output-format', 'json',
     '--max-turns', String(opts.maxTurns),
     '--allowedTools', opts.allowedTools,
   ];
+  if (opts.pluginDir) args.push('--plugin-dir', opts.pluginDir);
+  return args;
 }
 
 export function spawnClaude(opts: {
@@ -91,11 +89,12 @@ export function spawnClaude(opts: {
   worktreeDir: string;
   maxTurns: number;
   allowedTools: string;
+  pluginDir?: string;
   onLog: (line: string) => void;
 }): { process: ReturnType<typeof Bun.spawn>; result: Promise<ClaudeResult> } {
   const args = opts.sessionId
-    ? buildResumeArgs({ sessionId: opts.sessionId, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools })
-    : buildFreshArgs({ prompt: opts.prompt!, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools });
+    ? buildResumeArgs({ sessionId: opts.sessionId, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools, pluginDir: opts.pluginDir })
+    : buildFreshArgs({ prompt: opts.prompt!, maxTurns: opts.maxTurns, allowedTools: opts.allowedTools, pluginDir: opts.pluginDir });
 
   const proc = Bun.spawn(args, {
     cwd: opts.worktreeDir,
