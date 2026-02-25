@@ -18,6 +18,8 @@ const STATUS_DISPLAY: Record<
   'creating-worktree': { icon: '', color: 'yellow', label: 'Worktree...', spinning: true },
   'running-claude': { icon: '', color: 'cyan', label: 'Running...', spinning: true },
   pushing: { icon: '', color: 'yellow', label: 'Pushing...', spinning: true },
+  reviewing: { icon: '', color: 'magenta', label: 'Reviewing...', spinning: true },
+  'review-posted': { icon: '\u2713', color: 'magenta', label: 'Reviewed', spinning: false },
   'pr-created': { icon: '\u2713', color: 'green', label: 'PR created', spinning: false },
   failed: { icon: '\u2717', color: 'red', label: 'Failed', spinning: false },
   stopped: { icon: '\u23F9', color: 'yellow', label: 'Stopped', spinning: false },
