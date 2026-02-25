@@ -20,7 +20,7 @@ interface WizardData {
 }
 
 const DEFAULT_ALLOWED_TOOLS =
-  'Read,Edit,Write,Glob,Grep,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)';
+  'Read,Edit,Write,Glob,Grep,Skill,Task,Bash,Bash(git *),Bash(composer *),Bash(php *),Bash(cd *),Bash(pnpm *),Bash(proxychains4 *),Bash(gh *),Bash(cat *),Bash(ls *)';
 
 interface StepConfig {
   key: keyof WizardData;
