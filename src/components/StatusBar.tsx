@@ -18,6 +18,8 @@ export function StatusBar({ issues, paused, startedAt, nextPollAt }: Props) {
   const stopped = issues.filter((i) => i.status === 'stopped').length;
   const queued = issues.filter((i) => i.status === 'queued').length;
   const abandoned = issues.filter((i) => i.status === 'abandoned').length;
+  const reviewing = issues.filter((i) => i.status === 'reviewing').length;
+  const reviewed = issues.filter((i) => i.status === 'review-posted').length;
 
   const elapsed = Math.floor((Date.now() - startedAt) / 1000);
   const mins = Math.floor(elapsed / 60);
@@ -35,6 +37,8 @@ export function StatusBar({ issues, paused, startedAt, nextPollAt }: Props) {
         {failed > 0 && <Text color="red">{failed} failed</Text>}
         {stopped > 0 && <Text color="yellow">{stopped} stopped</Text>}
         {abandoned > 0 && <Text dimColor>{abandoned} deleted</Text>}
+        {reviewing > 0 && <Text color="magenta">{reviewing} reviewing</Text>}
+        {reviewed > 0 && <Text color="magenta">{reviewed} reviewed</Text>}
         {paused && <Text color="yellow" bold> PAUSED</Text>}
         {!paused && pollCountdown !== null && running === 0 && queued === 0 && (
           <Text dimColor>poll in {pollCountdown}s</Text>
@@ -42,7 +46,7 @@ export function StatusBar({ issues, paused, startedAt, nextPollAt }: Props) {
       </Box>
       <Box gap={2}>
         <Text dimColor>{time}</Text>
-        <Text dimColor>[j/k] nav  [enter] expand  [s] stop  [r/c/d] actions  [p] pause  [q] quit</Text>
+        <Text dimColor>[j/k] nav  [enter] expand  [s] stop  [r/c/d] actions  [v] review  [p] pause  [q] quit</Text>
       </Box>
     </Box>
   );
