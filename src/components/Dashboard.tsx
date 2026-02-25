@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
+import TextInput from 'ink-text-input';
 import type { TrackedIssue } from '../types';
 import type { Processor, ProcessorEvent } from '../services/processor';
+import { parsePRInput } from '../lib/pr';
 import { IssueRow } from './IssueRow';
 import { LogPanel } from './LogPanel';
 import { StatusBar } from './StatusBar';
@@ -22,6 +24,9 @@ export function Dashboard({ processor, title, dryRun }: Props) {
   const [startedAt] = useState(Date.now());
   const [, setTick] = useState(0);
   const [autoExpanded, setAutoExpanded] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
+  const [reviewInput, setReviewInput] = useState('');
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = (event: ProcessorEvent) => {
@@ -54,9 +59,41 @@ export function Dashboard({ processor, title, dryRun }: Props) {
     }
   }, [issues, autoExpanded]);
 
+  const handleReviewSubmit = useCallback(
+    (value: string) => {
+      const parsed = parsePRInput(value);
+      if (!parsed) {
+        setReviewError('Invalid input — enter a PR URL or number');
+        return;
+      }
+
+      setReviewMode(false);
+      setReviewInput('');
+      setReviewError(null);
+
+      processor.reviewPR({
+        prNumber: parsed.prNumber,
+        repoSlug: parsed.repoSlug,
+      }).catch((err: Error) => {
+        setReviewError(err.message);
+        setTimeout(() => setReviewError(null), 5000);
+      });
+    },
+    [processor]
+  );
+
   useInput(
     useCallback(
       (input: string, key: any) => {
+        if (reviewMode) {
+          if (key.escape) {
+            setReviewMode(false);
+            setReviewInput('');
+            setReviewError(null);
+          }
+          return;
+        }
+
         if (input === 'q') {
           processor.gracefulShutdown().then(() => exit());
           return;
@@ -104,6 +141,13 @@ export function Dashboard({ processor, title, dryRun }: Props) {
           return;
         }
 
+        if (input === 'v') {
+          setReviewMode(true);
+          setReviewInput('');
+          setReviewError(null);
+          return;
+        }
+
         if (input === 'j' || key.downArrow) {
           setFocusIndex((i) => Math.min(i + 1, issues.length - 1));
         }
@@ -116,7 +160,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
           setExpandedIndex((current) => (current === focusIndex ? null : focusIndex));
         }
       },
-      [focusIndex, issues, processor, exit]
+      [focusIndex, issues, processor, exit, reviewMode]
     )
   );
 
@@ -189,6 +233,24 @@ export function Dashboard({ processor, title, dryRun }: Props) {
               return renderRow(tracked, globalIdx);
             })}
       </Box>
+
+      {/* Review input */}
+      {reviewMode && (
+        <Box marginTop={1}>
+          <Text bold color="magenta">Review PR: </Text>
+          <TextInput
+            value={reviewInput}
+            onChange={setReviewInput}
+            onSubmit={handleReviewSubmit}
+            placeholder="PR URL or number (Esc to cancel)"
+          />
+        </Box>
+      )}
+      {reviewError && (
+        <Box>
+          <Text color="red">{reviewError}</Text>
+        </Box>
+      )}
 
       {/* Status bar */}
       <StatusBar
