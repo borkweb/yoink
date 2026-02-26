@@ -1,5 +1,7 @@
 import type { ServerWebSocket } from 'bun';
 import type { YoinkEngine, YoinkState } from '../engine';
+import { join, dirname } from 'path';
+import { existsSync } from 'fs';
 
 interface WSData {
   handler: (state: YoinkState) => void;
@@ -59,6 +61,24 @@ async function dispatchAction(
   return true;
 }
 
+// Resolve web/dist relative to project root (this file is in src/server/)
+const WEB_DIST = join(dirname(dirname(import.meta.dir)), 'web', 'dist');
+
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+};
+
+function getMimeType(path: string): string {
+  const ext = path.slice(path.lastIndexOf('.'));
+  return MIME_TYPES[ext] ?? 'application/octet-stream';
+}
+
 export function createServer(engine: YoinkEngine, port: number) {
   return Bun.serve<WSData>({
     port,
@@ -91,6 +111,22 @@ export function createServer(engine: YoinkEngine, port: number) {
         }
 
         return Response.json({ ok: true });
+      }
+
+      // Serve static files from web/dist
+      const filePath = join(WEB_DIST, url.pathname === '/' ? 'index.html' : url.pathname);
+      if (existsSync(filePath)) {
+        return new Response(Bun.file(filePath), {
+          headers: { 'Content-Type': getMimeType(filePath) },
+        });
+      }
+
+      // SPA fallback — serve index.html for unmatched routes
+      const indexPath = join(WEB_DIST, 'index.html');
+      if (existsSync(indexPath)) {
+        return new Response(Bun.file(indexPath), {
+          headers: { 'Content-Type': 'text/html' },
+        });
       }
 
       return Response.json({ error: 'Not found' }, { status: 404 });

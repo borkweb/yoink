@@ -187,9 +187,15 @@ describe('WebSocket /ws', () => {
 });
 
 describe('unknown routes', () => {
-  it('returns 404 for unmatched paths', async () => {
+  it('serves SPA fallback for unmatched paths when web/dist exists', async () => {
     const { url } = startServer();
     const res = await fetch(`${url}/nope`);
-    expect(res.status).toBe(404);
+    // SPA fallback: serves index.html with 200 if web/dist exists, 404 otherwise
+    const contentType = res.headers.get('content-type') ?? '';
+    if (res.status === 200) {
+      expect(contentType).toContain('text/html');
+    } else {
+      expect(res.status).toBe(404);
+    }
   });
 });

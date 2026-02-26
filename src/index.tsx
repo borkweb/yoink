@@ -8,6 +8,8 @@ import { SetupWizard } from './components/SetupWizard';
 import { InitOverwrite } from './components/InitOverwrite';
 import { acquireLock, releaseLock } from './lib/pidlock';
 import { createServer } from './server/server';
+import { join, dirname } from 'path';
+import { existsSync } from 'fs';
 
 console.log(`
   __   __  ___   ___  _   _  _  __
@@ -30,6 +32,7 @@ const cli = meow(
     --dry-run        Fetch and display issues without processing
     --concurrency    Number of parallel Claude runs (default: from config)
     --all            Process all configured projects
+    --dev            Start Vite dev server for web UI with HMR
 
   Examples
     $ yoink myproject
@@ -43,6 +46,7 @@ const cli = meow(
       dryRun: { type: 'boolean', default: false },
       concurrency: { type: 'number' },
       all: { type: 'boolean', default: false },
+      dev: { type: 'boolean', default: false },
     },
   }
 );
@@ -140,12 +144,48 @@ const engine = new YoinkEngine(config, {
   concurrency: cli.flags.concurrency,
 });
 
-const webServer = createServer(engine, config.defaults.webPort);
-console.log(`  Web: http://localhost:${webServer.port}\n`);
+// Build web UI if dist doesn't exist (production mode)
+const webDir = join(dirname(import.meta.dir), 'web');
+const webDistIndex = join(webDir, 'dist', 'index.html');
 
-// On termination: kill child Claude processes so they don't become orphans
+let viteProc: ReturnType<typeof Bun.spawn> | null = null;
+
+if (cli.flags.dev) {
+  // Dev mode: start Vite dev server with HMR
+  viteProc = Bun.spawn(['bunx', 'vite'], {
+    cwd: webDir,
+    stdout: 'inherit',
+    stderr: 'inherit',
+  });
+  console.log(`  Web (dev): http://localhost:5173\n`);
+} else {
+  if (!existsSync(webDistIndex)) {
+    console.log('  Building web UI...');
+    const build = Bun.spawn(['bunx', 'vite', 'build'], {
+      cwd: webDir,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+    const exitCode = await build.exited;
+    if (exitCode !== 0) {
+      const stderr = await new Response(build.stderr).text();
+      console.error(`  Web UI build failed: ${stderr}`);
+    }
+  }
+}
+
+const webServer = createServer(engine, config.defaults.webPort);
+if (!cli.flags.dev) {
+  console.log(`  Web: http://localhost:${webServer.port}\n`);
+}
+
+// On termination: kill child processes (Claude, Vite) so they don't become orphans
 // with broken stdio pipes, then exit (triggers 'exit' handler for lock release).
-const onTerminate = () => { engine.killActiveProcesses(); process.exit(0); };
+const onTerminate = () => {
+  if (viteProc) viteProc.kill();
+  engine.killActiveProcesses();
+  process.exit(0);
+};
 process.on('SIGTERM', onTerminate);
 process.on('SIGINT', onTerminate);
 
