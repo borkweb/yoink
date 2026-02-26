@@ -7,6 +7,7 @@ import { YoinkEngine } from './engine';
 import { SetupWizard } from './components/SetupWizard';
 import { InitOverwrite } from './components/InitOverwrite';
 import { acquireLock, releaseLock } from './lib/pidlock';
+import { createServer } from './server/server';
 
 console.log(`
   __   __  ___   ___  _   _  _  __
@@ -138,6 +139,9 @@ const engine = new YoinkEngine(config, {
   dryRun: cli.flags.dryRun,
   concurrency: cli.flags.concurrency,
 });
+
+const webServer = createServer(engine, config.defaults.webPort);
+console.log(`  Web: http://localhost:${webServer.port}\n`);
 
 // On termination: kill child Claude processes so they don't become orphans
 // with broken stdio pipes, then exit (triggers 'exit' handler for lock release).
