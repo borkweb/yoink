@@ -41,7 +41,7 @@ You are an autonomous coding agent working on a Linear issue. Follow this workfl
   - Push back with technical reasoning if the reviewer is wrong
 
 ## 5. Double-check
-- Dispatch two new dedicated sub-agents using the same skills you've used to grade your execution 1 to 5.
+- Dispatch two new dedicated sub-agents using the same skills you've used to grade your execution 1 to 5 (5 being the best).
 - If both reviewer sub-agents grade your execution 5, you are done. If one of the reviewer sub-agents grades your execution less than 5, then dispatch a new sub-agent using the same skills you've used to update the code, repeat this review and update process until all reviewer sub-agents grade your execution 5.
 
 ## 6. Commit
