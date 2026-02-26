@@ -22,18 +22,13 @@ You are reviewing a pull request. Follow this workflow precisely — do not skip
 
 ## 3. Dispatch superpowers:code-reviewer subagent
 - Use the Task tool with `superpowers:code-reviewer` subagent type
-- Fill in the template:
-  - `{WHAT_WAS_IMPLEMENTED}`: the PR title
-  - `{PLAN_OR_REQUIREMENTS}`: the PR description
-  - `{BASE_SHA}` / `{HEAD_SHA}`: from step 2
-  - `{DESCRIPTION}`: brief summary of the changes based on the diff
 
 ## 4. Post the review as a PR comment
-- Take the subagent's review output
+- Take the subagent's review output and be as concise as possible
 - Append this footer on its own line at the end:
   ```
   ---
-  🤖 *Automated review by Claude*
+  🤖 *Automated review by Claude via Yoink*
   ```
 - Post as a comment using the command from your prompt:
   ```bash
