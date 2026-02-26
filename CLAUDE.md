@@ -8,7 +8,7 @@
 
 - **Runtime**: Bun
 - **Language**: TypeScript (strict)
-- **UI**: React 18 + Ink 5 (terminal rendering)
+- **UI**: React 18 + Ink 5 (terminal), React + Vite + Tailwind (web dashboard)
 - **Config**: TOML via `smol-toml`
 - **CLI**: `meow`
 - **Testing**: `bun test` (built-in test runner)
@@ -52,6 +52,9 @@ src/
     pr.ts                  PR URL parsing and metadata fetching via GitHub CLI
     github.ts              GitHub CLI wrapper for PR creation
     shell.ts               splitCommand() — splits command strings with tilde expansion
+web/
+  src/                     React + Vite web dashboard (connects via WebSocket to server)
+  vite.config.ts           Vite config with proxy to yoink server on port 7890
 ```
 
 ## Commands
@@ -59,6 +62,7 @@ src/
 ```bash
 bun test                  # run all tests
 bun run src/index.tsx     # run the CLI in development
+cd web && bunx vite       # run web dashboard dev server (needs yoink running for WebSocket)
 ```
 
 ## Conventions
