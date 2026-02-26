@@ -51,3 +51,75 @@ describe('GET /api/state', () => {
     expect(data.paused).toBe(false);
   });
 });
+
+describe('POST /api/actions', () => {
+  it('dispatches pause action', async () => {
+    const { engine, url } = startServer();
+    expect(engine.getState().paused).toBe(false);
+
+    const res = await fetch(`${url}/api/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'pause' }),
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+    expect(engine.getState().paused).toBe(true);
+  });
+
+  it('dispatches resume action', async () => {
+    const { engine, url } = startServer();
+    engine.pause();
+
+    const res = await fetch(`${url}/api/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resume' }),
+    });
+    expect(res.status).toBe(200);
+    expect(engine.getState().paused).toBe(false);
+  });
+
+  it('dispatches issue actions with identifier', async () => {
+    const { url } = startServer();
+
+    const res = await fetch(`${url}/api/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'stopIssue', identifier: 'TEST-1' }),
+    });
+    // No-op on empty state, but should not error
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  });
+
+  it('rejects unknown actions with 400', async () => {
+    const { url } = startServer();
+
+    const res = await fetch(`${url}/api/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'dropDatabase' }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects malformed JSON with 400', async () => {
+    const { url } = startServer();
+
+    const res = await fetch(`${url}/api/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: 'not json',
+    });
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('unknown routes', () => {
+  it('returns 404 for unmatched paths', async () => {
+    const { url } = startServer();
+    const res = await fetch(`${url}/nope`);
+    expect(res.status).toBe(404);
+  });
+});
