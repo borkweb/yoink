@@ -75,6 +75,39 @@ api_key = "lin_api_test"
     expect(() => parseConfig(bad)).toThrow(/project/i);
   });
 
+  it('parses web_port from defaults', () => {
+    const toml = `
+[defaults]
+web_port = 3000
+
+[linear]
+api_key = "lin_api_test"
+
+[projects.x]
+repo_dir = "/tmp/x"
+linear_team = "X"
+linear_assignee = "me"
+linear_label = "Auto"
+`;
+    const config = parseConfig(toml);
+    expect(config.defaults.webPort).toBe(3000);
+  });
+
+  it('defaults web_port to 7890 when not specified', () => {
+    const toml = `
+[linear]
+api_key = "lin_api_test"
+
+[projects.x]
+repo_dir = "/tmp/x"
+linear_team = "X"
+linear_assignee = "me"
+linear_label = "Auto"
+`;
+    const config = parseConfig(toml);
+    expect(config.defaults.webPort).toBe(7890);
+  });
+
   it('parses TOML in the format the setup wizard generates', () => {
     const wizardOutput = `[defaults]
 concurrency = 2

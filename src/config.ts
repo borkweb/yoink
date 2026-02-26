@@ -23,6 +23,7 @@ export function parseConfig(toml: string): Config {
       concurrency: Number(parsed.defaults?.concurrency ?? 2),
       maxTurns: Number(parsed.defaults?.max_turns ?? 100),
       pollInterval: Number(parsed.defaults?.poll_interval ?? 30),
+      webPort: Number(parsed.defaults?.web_port ?? 7890),
     },
     linear: {
       apiKey: parsed.linear?.api_key ?? '',

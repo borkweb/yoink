@@ -53,6 +53,7 @@ export interface Config {
     concurrency: number;
     maxTurns: number;
     pollInterval: number;
+    webPort: number;
   };
   linear: {
     apiKey: string;
