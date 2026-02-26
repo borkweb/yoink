@@ -30,6 +30,11 @@ src/
   app.tsx                 App component (initialization, history loading)
   types.ts                shared types (TrackedIssue, Config, etc.)
   config.ts               TOML config loading from ~/.config/yoink/config.toml
+  engine/
+    YoinkEngine.ts         headless orchestration engine (EventEmitter, owns all state)
+    types.ts               YoinkState, YoinkEngineOptions, YoinkEngineEvents
+  server/
+    server.ts              HTTP + WebSocket server (Bun.serve), REST API + real-time state
   components/
     SetupWizard.tsx        interactive first-run config wizard (Ink + ink-text-input)
     InitOverwrite.tsx      overwrite confirmation when running `yoink init` with existing config
@@ -68,6 +73,7 @@ bun run src/index.tsx     # run the CLI in development
 - Branch names follow: `linear/<identifier-lowercase>`
 - Use `splitCommand()` from `src/lib/shell.ts` when spawning `githubCommand` — it splits on whitespace and expands `~/` (needed for multi-word commands like `proxychains4 -q -f ~/.proxychains.conf gh`)
 - PR titles are prefixed with a robot emoji programmatically after creation via the GitHub CLI
+- Web server runs on `web_port` (default 7890) — serves REST API (`/api/state`, `/api/actions`) + WebSocket (`/ws`) for real-time state
 
 ## Testing
 
