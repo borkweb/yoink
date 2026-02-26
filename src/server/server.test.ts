@@ -116,6 +116,76 @@ describe('POST /api/actions', () => {
   });
 });
 
+describe('WebSocket /ws', () => {
+  it('sends full state on connect', async () => {
+    const { url } = startServer();
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+
+    const received = await new Promise<any>((resolve) => {
+      const ws = new WebSocket(wsUrl);
+      ws.onmessage = (event) => {
+        resolve(JSON.parse(event.data as string));
+        ws.close();
+      };
+    });
+
+    expect(received.type).toBe('state:full');
+    expect(received.data).toHaveProperty('issues');
+    expect(received.data).toHaveProperty('paused');
+  });
+
+  it('forwards state:changed events to connected clients', async () => {
+    const engine = new YoinkEngine(config);
+    const { url } = startServer(engine);
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+
+    const messages = await new Promise<any[]>((resolve) => {
+      const msgs: any[] = [];
+      const ws = new WebSocket(wsUrl);
+      ws.onmessage = (event) => {
+        msgs.push(JSON.parse(event.data as string));
+        if (msgs.length === 1) {
+          // After receiving initial state, trigger a change
+          engine.pause();
+        }
+        if (msgs.length === 2) {
+          ws.close();
+          resolve(msgs);
+        }
+      };
+    });
+
+    expect(messages[0].type).toBe('state:full');
+    expect(messages[1].type).toBe('state:changed');
+    expect(messages[1].data.paused).toBe(true);
+  });
+
+  it('accepts commands from clients', async () => {
+    const engine = new YoinkEngine(config);
+    const { url } = startServer(engine);
+    const wsUrl = url.replace('http', 'ws') + '/ws';
+
+    expect(engine.getState().paused).toBe(false);
+
+    await new Promise<void>((resolve) => {
+      const ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ action: 'pause' }));
+      };
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data as string);
+        // Wait for the state:changed showing paused
+        if (msg.type === 'state:changed' && msg.data.paused) {
+          ws.close();
+          resolve();
+        }
+      };
+    });
+
+    expect(engine.getState().paused).toBe(true);
+  });
+});
+
 describe('unknown routes', () => {
   it('returns 404 for unmatched paths', async () => {
     const { url } = startServer();
