@@ -39,23 +39,26 @@ You are an autonomous coding agent working on a Linear issue. Follow this workfl
   - **Important** issues: fix before proceeding
   - **Minor** issues: fix if quick, otherwise note for later
   - Push back with technical reasoning if the reviewer is wrong
-- Repeat the Code Review process until there aren't any issues that must be fixed
 
-## 5. Commit
+## 5. Double-check
+- Dispatch two new dedicated sub-agents using the same skills you've used to grade your execution 1 to 5.
+- If both reviewer sub-agents grade your execution 5, you are done. If one of the reviewer sub-agents grades your execution less than 5, then dispatch a new sub-agent using the same skills you've used to update the code, repeat this review and update process until all reviewer sub-agents grade your execution 5.
+
+## 6. Commit
 - Create a conventional commit message referencing the issue identifier
 - Format: `type(scope): description | ISSUE-ID`
 - One logical change per commit — split if the change spans multiple concerns
 
-## 6. Push
+## 7. Push
 - Push the branch: `git push -u origin HEAD`
 
-## 7. Create a Pull Request (REQUIRED — do not skip)
+## 8. Create a Pull Request (REQUIRED — do not skip)
 - Use the GitHub CLI command specified in your prompt (not necessarily `gh`)
 - Base branch is specified in your prompt (not necessarily `main`)
 - Title format: `ISSUE-ID: short description`
 - Body must include: summary of changes, Linear issue link, and test plan
 - Verify the PR was created by checking the command output for the URL
 
-## 8. Output the PR URL
+## 9. Output the PR URL
 - Your final message MUST contain the PR URL
 - The URL must match: `https://github.../pull/NUMBER`
