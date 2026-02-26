@@ -8,8 +8,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-[#050505] text-[#E5E5E5] font-mono min-h-screen" style="font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace">
+  <body class="bg-[var(--bg-page)] text-[var(--text-secondary)] font-mono min-h-screen" style="font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace">
     <div id="root"></div>
+    <script>
+      (function() {
+        var s = localStorage.getItem('yoink-theme');
+        if (s === 'dark' || (!s && matchMedia('(prefers-color-scheme:dark)').matches))
+          document.documentElement.classList.add('dark');
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useYoinkState } from './hooks/useYoinkState';
+import { useTheme } from './hooks/useTheme';
 import { TopBar } from './components/TopBar';
 import { Toolbar } from './components/Toolbar';
 import { IssueTable } from './components/IssueTable';
@@ -9,11 +10,12 @@ import { PRReviewModal } from './components/PRReviewModal';
 export function App() {
   const { state, connected, dispatch } = useYoinkState();
   const [showPRModal, setShowPRModal] = useState(false);
+  const { isDark, toggle: toggleTheme } = useTheme();
 
   if (!state) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="text-[#525252] text-sm">
+        <span className="text-[var(--text-faint)] text-sm">
           {connected ? 'Loading...' : 'Connecting to yoink...'}
         </span>
       </div>
@@ -29,6 +31,8 @@ export function App() {
         title={state.title}
         polling={state.polling}
         nextPollAt={state.nextPollAt}
+        isDark={isDark}
+        onToggleTheme={toggleTheme}
       />
 
       <Toolbar

@@ -1,1 +1,139 @@
 @import "tailwindcss";
+
+:root {
+  /* Backgrounds */
+  --bg-page: #FAFAFA;
+  --bg-chrome: #FFFFFF;
+  --bg-surface: #F9FAFB;
+  --bg-hover: #F3F4F6;
+  --bg-inset: #F3F4F6;
+  --bg-overlay: rgba(0, 0, 0, 0.3);
+
+  /* Borders */
+  --border-subtle: #F3F4F6;
+  --border-primary: #E5E7EB;
+  --border-secondary: #D1D5DB;
+
+  /* Text */
+  --text-primary: #111827;
+  --text-secondary: #1F2937;
+  --text-tertiary: #374151;
+  --text-muted: #626B77;
+  --text-subtle: #6B6B6B;
+  --text-faint: #717171;
+  --text-dimmed: #737373;
+
+  /* Status text */
+  --status-running: #0E7490;
+  --status-completed: #15803D;
+  --status-failed: #B91C1C;
+  --status-stopped: #92400E;
+  --status-queued: #4F46E5;
+
+  /* Status badge backgrounds */
+  --status-running-bg: #ECFEFF;
+  --status-completed-bg: #DCFCE7;
+  --status-failed-bg: #FEF2F2;
+  --status-stopped-bg: #FEF3C7;
+  --status-queued-bg: #EEF2FF;
+
+  /* Buttons */
+  --btn-danger-bg: #FEF2F2;
+  --btn-danger-border: #FECACA;
+  --btn-danger-text: #B91C1C;
+  --btn-secondary-bg: #F9FAFB;
+  --btn-secondary-border: #D1D5DB;
+  --btn-secondary-text: #6B7280;
+
+  /* Error */
+  --error-bg: #FEF2F2;
+  --error-border: #FECACA;
+  --error-text: #B91C1C;
+
+  /* Code block */
+  --code-bg: #F3F4F6;
+  --code-border: #E5E7EB;
+  --code-text: #374151;
+
+  /* Accent (cyan) */
+  --accent: #0E7490;
+  --accent-bg: rgba(14, 116, 144, 0.08);
+  --accent-border: rgba(14, 116, 144, 0.15);
+
+  /* Paused badge */
+  --paused-text: #92400E;
+  --paused-bg: #FEF3C7;
+  --paused-border: #F59E0B;
+
+  /* Log text */
+  --log-text: #6B7280;
+}
+
+.dark {
+  --bg-page: #050505;
+  --bg-chrome: #080808;
+  --bg-surface: #0A0A0A;
+  --bg-hover: #0D0D0D;
+  --bg-inset: #111111;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  --border-subtle: #141414;
+  --border-primary: #1A1A1A;
+  --border-secondary: #262626;
+
+  --text-primary: #F5F5F5;
+  --text-secondary: #E5E5E5;
+  --text-tertiary: #D4D4D4;
+  --text-muted: #A3A3A3;
+  --text-subtle: #858585;
+  --text-faint: #7A7A7A;
+  --text-dimmed: #7A7A7A;
+
+  --status-running: #22D3EE;
+  --status-completed: #4ADE80;
+  --status-failed: #F87171;
+  --status-stopped: #FBBF24;
+  --status-queued: #818CF8;
+
+  --status-running-bg: #083344;
+  --status-completed-bg: #052E16;
+  --status-failed-bg: #450A0A;
+  --status-stopped-bg: #422006;
+  --status-queued-bg: #1E1B4B;
+
+  --btn-danger-bg: #7F1D1D;
+  --btn-danger-border: #991B1B;
+  --btn-danger-text: #FCA5A5;
+  --btn-secondary-bg: #1C1917;
+  --btn-secondary-border: #44403C;
+  --btn-secondary-text: #A8A29E;
+
+  --error-bg: #450A0A;
+  --error-border: #7F1D1D;
+  --error-text: #FCA5A5;
+
+  --code-bg: #111111;
+  --code-border: #262626;
+  --code-text: #A3A3A3;
+
+  --accent: #22D3EE;
+  --accent-bg: rgba(34, 211, 238, 0.08);
+  --accent-border: rgba(34, 211, 238, 0.17);
+
+  --paused-text: #FBBF24;
+  --paused-bg: #422006;
+  --paused-border: #92400E;
+
+  --log-text: #9CA3AF;
+}
+
+/* Global focus indicator for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Remove default focus ring for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}

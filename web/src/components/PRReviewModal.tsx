@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Props {
   onSubmit: (prNumber: number, repoSlug: string | null) => void;
@@ -7,8 +7,20 @@ interface Props {
 
 export function PRReviewModal({ onSubmit, onClose }: Props) {
   const [url, setUrl] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function handleSubmit() {
+  useEffect(() => {
+    inputRef.current?.focus();
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
+  function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault();
     if (!url.trim()) return;
 
     // Try to parse as a PR URL: https://github.com/org/repo/pull/123
@@ -28,39 +40,47 @@ export function PRReviewModal({ onSubmit, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 bg-[var(--bg-overlay)] flex items-center justify-center z-50 backdrop-blur-sm"
       onClick={onClose}
+      role="presentation"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#111111] border border-[#262626] rounded-lg p-6 w-[480px]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pr-modal-title"
+        className="bg-[var(--bg-inset)] border border-[var(--border-secondary)] rounded-lg p-6 w-[480px]"
       >
-        <h3 className="text-[15px] font-bold text-[#E5E5E5] mb-4">
+        <h2 id="pr-modal-title" className="text-[15px] font-bold text-[var(--text-secondary)] mb-4">
           Review a Pull Request
-        </h3>
-        <input
-          type="text"
-          placeholder="PR URL or number"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
-          className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-[#333] rounded text-[13px] text-[#E5E5E5] outline-none"
-          autoFocus
-        />
-        <div className="flex justify-end gap-2 mt-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-transparent border border-[#333] rounded text-xs text-[#737373] cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-[#22D3EE15] border border-[#22D3EE44] rounded text-xs text-[#22D3EE] font-semibold cursor-pointer"
-          >
-            Start Review
-          </button>
-        </div>
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="pr-url-input" className="sr-only">PR URL or number</label>
+          <input
+            ref={inputRef}
+            id="pr-url-input"
+            type="text"
+            placeholder="PR URL or number"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="w-full px-3 py-2.5 bg-[var(--bg-surface)] border border-[var(--border-secondary)] rounded text-[13px] text-[var(--text-secondary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+          />
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-transparent border border-[var(--border-secondary)] rounded text-xs text-[var(--text-subtle)] cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[var(--accent-bg)] border border-[var(--accent-border)] rounded text-xs text-[var(--accent)] font-semibold cursor-pointer"
+            >
+              Start Review
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

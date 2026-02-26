@@ -6,9 +6,11 @@ interface Props {
   title: string;
   polling: boolean;
   nextPollAt: number | null;
+  isDark: boolean;
+  onToggleTheme: () => void;
 }
 
-export function TopBar({ issues, title, polling, nextPollAt }: Props) {
+export function TopBar({ issues, title, polling, isDark, onToggleTheme }: Props) {
   const counts = {
     running: issues.filter((i) => mapStatus(i.status) === 'running').length,
     completed: issues.filter((i) => mapStatus(i.status) === 'completed').length,
@@ -17,41 +19,49 @@ export function TopBar({ issues, title, polling, nextPollAt }: Props) {
   };
 
   return (
-    <div className="flex justify-between items-center px-5 py-2.5 border-b border-[#1A1A1A] bg-[#080808]">
+    <header className="flex justify-between items-center px-5 py-2.5 border-b border-[var(--border-primary)] bg-[var(--bg-chrome)]">
       <div className="flex items-baseline gap-3">
-        <span className="text-xl font-black text-[#F5F5F5] tracking-tight">yoink</span>
-        {title && <span className="text-[11px] text-[#404040]">{title}</span>}
+        <span className="text-xl font-black text-[var(--text-primary)] tracking-tight">yoink</span>
+        {title && <span className="text-[11px] text-[var(--text-dimmed)]">{title}</span>}
       </div>
 
       <div className="flex items-center gap-5 text-[11px]">
         <div className="flex gap-3.5">
           <span>
-            <span className="text-[#22D3EE]">{counts.running}</span>{' '}
-            <span className="text-[#404040]">running</span>
+            <span className="text-[var(--status-running)]">{counts.running}</span>{' '}
+            <span className="text-[var(--text-dimmed)]">running</span>
           </span>
           <span>
-            <span className="text-[#4ADE80]">{counts.completed}</span>{' '}
-            <span className="text-[#404040]">done</span>
+            <span className="text-[var(--status-completed)]">{counts.completed}</span>{' '}
+            <span className="text-[var(--text-dimmed)]">done</span>
           </span>
           <span>
-            <span className="text-[#F87171]">{counts.failed}</span>{' '}
-            <span className="text-[#404040]">needs attention</span>
+            <span className="text-[var(--status-failed)]">{counts.failed}</span>{' '}
+            <span className="text-[var(--text-dimmed)]">needs attention</span>
           </span>
           <span>
-            <span className="text-[#818CF8]">{counts.queued}</span>{' '}
-            <span className="text-[#404040]">queued</span>
+            <span className="text-[var(--status-queued)]">{counts.queued}</span>{' '}
+            <span className="text-[var(--text-dimmed)]">queued</span>
           </span>
         </div>
 
-        <div className="w-px h-4 bg-[#1A1A1A]" />
+        <div className="w-px h-4 bg-[var(--border-primary)]" aria-hidden="true" />
 
         {polling && (
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
-            <span className="text-[#525252]">polling</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-completed)] animate-pulse" aria-hidden="true" />
+            <span className="text-[var(--text-faint)]">polling</span>
           </div>
         )}
+
+        <button
+          onClick={onToggleTheme}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer bg-transparent border-none text-sm leading-none p-1 rounded"
+        >
+          {isDark ? '☀' : '☾'}
+        </button>
       </div>
-    </div>
+    </header>
   );
 }

@@ -12,26 +12,27 @@ export function IssueTable({ issues, onAction }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
-    <div>
+    <div role="table" aria-label="Issues">
       {/* Column headers */}
       <div
-        className="grid text-[10px] text-[#404040] uppercase tracking-wider border-b border-[#141414] bg-[#080808] sticky top-0 z-10"
+        role="row"
+        className="grid text-[10px] text-[var(--text-dimmed)] uppercase tracking-wider border-b border-[var(--border-subtle)] bg-[var(--bg-chrome)] sticky top-0 z-10"
         style={{
           gridTemplateColumns: '28px 80px 1fr 80px 70px 80px',
           padding: '6px 14px',
         }}
       >
-        <span>P</span>
-        <span>Issue</span>
-        <span>Title</span>
-        <span>Status</span>
-        <span className="text-right">Time</span>
-        <span className="text-right">Actions</span>
+        <span role="columnheader">P</span>
+        <span role="columnheader">Issue</span>
+        <span role="columnheader">Title</span>
+        <span role="columnheader">Status</span>
+        <span role="columnheader" className="text-right">Time</span>
+        <span role="columnheader" className="text-right">Actions</span>
       </div>
 
       {/* Rows */}
       {issues.map((issue) => (
-        <div key={issue.issue.identifier}>
+        <div key={issue.issue.identifier} role="rowgroup">
           <IssueRow
             issue={issue}
             isSelected={selectedId === issue.issue.identifier}

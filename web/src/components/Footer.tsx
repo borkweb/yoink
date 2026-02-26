@@ -5,14 +5,18 @@ interface Props {
 
 export function Footer({ connected, issueCount }: Props) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 px-5 py-1.5 bg-[#080808] border-t border-[#1A1A1A] flex justify-between text-[10px] text-[#333]">
+    <footer className="fixed bottom-0 left-0 right-0 px-5 py-1.5 bg-[var(--bg-chrome)] border-t border-[var(--border-primary)] flex justify-between text-[10px] text-[var(--text-dimmed)]">
       <span>
         ws://localhost:7890{' '}
-        <span className={connected ? 'text-[#4ADE80]' : 'text-[#F87171]'}>
+        <span
+          className={connected ? 'text-[var(--status-completed)]' : 'text-[var(--status-failed)]'}
+          role="status"
+          aria-live="polite"
+        >
           {connected ? 'connected' : 'disconnected'}
         </span>
       </span>
       <span>{issueCount} issues</span>
-    </div>
+    </footer>
   );
 }

@@ -18,11 +18,11 @@ export function mapStatus(engineStatus: string): DisplayStatus {
 }
 
 export const STATUS_CONFIG: Record<DisplayStatus, { label: string; color: string; bg: string; pulse: boolean }> = {
-  running: { label: 'Running', color: '#22D3EE', bg: '#083344', pulse: true },
-  completed: { label: 'Done', color: '#4ADE80', bg: '#052E16', pulse: false },
-  failed: { label: 'Failed', color: '#F87171', bg: '#450A0A', pulse: false },
-  stopped: { label: 'Stopped', color: '#FBBF24', bg: '#422006', pulse: false },
-  queued: { label: 'Queued', color: '#818CF8', bg: '#1E1B4B', pulse: false },
+  running:   { label: 'Running', color: 'var(--status-running)',   bg: 'var(--status-running-bg)',   pulse: true },
+  completed: { label: 'Done',    color: 'var(--status-completed)', bg: 'var(--status-completed-bg)', pulse: false },
+  failed:    { label: 'Failed',  color: 'var(--status-failed)',    bg: 'var(--status-failed-bg)',    pulse: false },
+  stopped:   { label: 'Stopped', color: 'var(--status-stopped)',   bg: 'var(--status-stopped-bg)',   pulse: false },
+  queued:    { label: 'Queued',  color: 'var(--status-queued)',    bg: 'var(--status-queued-bg)',     pulse: false },
 };
 
 export const PRIORITY_CONFIG: Record<number, { label: string; color: string; icon: string }> = {
