@@ -2,25 +2,21 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import TextInput from 'ink-text-input';
 import type { TrackedIssue } from '../types';
-import type { Processor, ProcessorEvent } from '../services/processor';
+import type { YoinkEngine, YoinkState } from '../engine';
 import { parsePRInput } from '../lib/pr';
 import { IssueRow } from './IssueRow';
 import { LogPanel } from './LogPanel';
 import { StatusBar } from './StatusBar';
 
 interface Props {
-  processor: Processor;
-  title: string;
-  dryRun?: boolean;
+  engine: YoinkEngine;
 }
 
-export function Dashboard({ processor, title, dryRun }: Props) {
+export function Dashboard({ engine }: Props) {
   const { exit } = useApp();
-  const [issues, setIssues] = useState<TrackedIssue[]>(processor.getIssues());
+  const [state, setState] = useState<YoinkState>(engine.getState());
   const [focusIndex, setFocusIndex] = useState(0);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [done, setDone] = useState(false);
-  const [nextPollAt, setNextPollAt] = useState<number | null>(null);
   const [startedAt] = useState(Date.now());
   const [, setTick] = useState(0);
   const [autoExpanded, setAutoExpanded] = useState(false);
@@ -28,18 +24,13 @@ export function Dashboard({ processor, title, dryRun }: Props) {
   const [reviewInput, setReviewInput] = useState('');
   const [reviewError, setReviewError] = useState<string | null>(null);
 
+  const { issues, paused, done, title, dryRun, nextPollAt } = state;
+
   useEffect(() => {
-    const handler = (event: ProcessorEvent) => {
-      if (event.type === 'update') {
-        setIssues(event.issues);
-      } else if (event.type === 'done') {
-        setDone(true);
-      } else if (event.type === 'polling') {
-        setNextPollAt(event.nextPollAt);
-      }
-    };
-    processor.on(handler);
-  }, [processor]);
+    const handler = (newState: YoinkState) => setState(newState);
+    engine.on('state:changed', handler);
+    return () => { engine.off('state:changed', handler); };
+  }, [engine]);
 
   // Tick for elapsed time updates
   useEffect(() => {
@@ -71,7 +62,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
       setReviewInput('');
       setReviewError(null);
 
-      processor.reviewPR({
+      engine.reviewPR({
         prNumber: parsed.prNumber,
         repoSlug: parsed.repoSlug,
       }).catch((err: Error) => {
@@ -79,7 +70,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
         setTimeout(() => setReviewError(null), 5000);
       });
     },
-    [processor]
+    [engine]
   );
 
   useInput(
@@ -95,16 +86,15 @@ export function Dashboard({ processor, title, dryRun }: Props) {
         }
 
         if (input === 'q') {
-          processor.gracefulShutdown().then(() => exit());
+          engine.shutdown().then(() => exit());
           return;
         }
 
         if (input === 'p') {
-          if (processor.isPaused()) {
-            processor.resume();
+          if (paused) {
+            engine.resume();
           } else {
-            processor.pause();
-            setNextPollAt(null);
+            engine.pause();
           }
           return;
         }
@@ -112,7 +102,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
         if (input === 's') {
           const selected = issues[focusIndex];
           if (selected && ['running-claude', 'creating-worktree', 'pushing'].includes(selected.status)) {
-            processor.stopIssue(selected.issue.identifier);
+            engine.stopIssue(selected.issue.identifier);
           }
           return;
         }
@@ -120,7 +110,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
         if (input === 'r') {
           const selected = issues[focusIndex];
           if (selected?.status === 'failed' || selected?.status === 'stopped') {
-            processor.retryIssue(selected.issue.identifier);
+            engine.retryIssue(selected.issue.identifier);
           }
           return;
         }
@@ -128,7 +118,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
         if (input === 'c') {
           const selected = issues[focusIndex];
           if (selected?.status === 'failed' || selected?.status === 'stopped') {
-            processor.continueIssue(selected.issue.identifier);
+            engine.continueIssue(selected.issue.identifier);
           }
           return;
         }
@@ -136,7 +126,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
         if (input === 'd') {
           const selected = issues[focusIndex];
           if (selected?.status === 'failed' || selected?.status === 'stopped') {
-            processor.deleteIssue(selected.issue.identifier);
+            engine.deleteIssue(selected.issue.identifier);
           }
           return;
         }
@@ -160,7 +150,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
           setExpandedIndex((current) => (current === focusIndex ? null : focusIndex));
         }
       },
-      [focusIndex, issues, processor, exit, reviewMode]
+      [focusIndex, issues, paused, engine, exit, reviewMode]
     )
   );
 
@@ -255,7 +245,7 @@ export function Dashboard({ processor, title, dryRun }: Props) {
       {/* Status bar */}
       <StatusBar
         issues={issues}
-        paused={processor.isPaused()}
+        paused={paused}
         startedAt={startedAt}
         nextPollAt={nextPollAt}
       />

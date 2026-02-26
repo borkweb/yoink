@@ -42,6 +42,10 @@ export class Processor {
     this.listeners.push(listener);
   }
 
+  off(listener: (event: ProcessorEvent) => void) {
+    this.listeners = this.listeners.filter((l) => l !== listener);
+  }
+
   private emit(event: ProcessorEvent) {
     for (const listener of this.listeners) listener(event);
   }

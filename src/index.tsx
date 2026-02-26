@@ -2,7 +2,8 @@ import React from 'react';
 import { render } from 'ink';
 import meow from 'meow';
 import { App } from './app';
-import { getConfigPath, configExists } from './config';
+import { loadConfig, getConfigPath, configExists } from './config';
+import { YoinkEngine } from './engine';
 import { SetupWizard } from './components/SetupWizard';
 import { InitOverwrite } from './components/InitOverwrite';
 import { acquireLock, releaseLock } from './lib/pidlock';
@@ -103,8 +104,6 @@ if (cli.input[0] === 'projects') {
 // Kill any existing yoink instance and claim the lock
 acquireLock();
 process.on('exit', releaseLock);
-process.on('SIGINT', () => { releaseLock(); process.exit(0); });
-process.on('SIGTERM', () => { releaseLock(); process.exit(0); });
 
 // Determine project and issue from positional args
 const [first, second] = cli.input;
@@ -123,12 +122,27 @@ if (second && /^[A-Za-z]+-\d+$/.test(second)) {
   singleIssue = second.toUpperCase();
 }
 
-render(
-  <App
-    projectName={projectName}
-    singleIssue={singleIssue}
-    all={cli.flags.all}
-    dryRun={cli.flags.dryRun}
-    concurrency={cli.flags.concurrency}
-  />
-);
+let config;
+try {
+  config = loadConfig();
+} catch (err) {
+  console.error(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+  throw err; // unreachable, helps TypeScript narrow the type
+}
+
+const engine = new YoinkEngine(config, {
+  projectName,
+  singleIssue,
+  all: cli.flags.all,
+  dryRun: cli.flags.dryRun,
+  concurrency: cli.flags.concurrency,
+});
+
+// On termination: kill child Claude processes so they don't become orphans
+// with broken stdio pipes, then exit (triggers 'exit' handler for lock release).
+const onTerminate = () => { engine.killActiveProcesses(); process.exit(0); };
+process.on('SIGTERM', onTerminate);
+process.on('SIGINT', onTerminate);
+
+render(<App engine={engine} />);
