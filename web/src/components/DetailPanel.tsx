@@ -33,7 +33,7 @@ export function DetailPanel({ issue, onClose }: { issue: TrackedIssue; onClose: 
       aria-label={`Details for ${issue.issue.identifier}`}
     >
       {/* Metadata bar */}
-      <div className="flex justify-between items-center px-[18px] pt-2.5 pb-2">
+      <div className="flex justify-between items-center px-5 pt-2.5 pb-2">
         <div className="flex gap-4 text-[11px] text-[var(--text-faint)]">
           {branch && (
             <span>
@@ -82,14 +82,14 @@ export function DetailPanel({ issue, onClose }: { issue: TrackedIssue; onClose: 
 
       {/* Error banner */}
       {issue.error && (
-        <div role="alert" className="mx-[18px] mt-2.5 px-3 py-2 bg-[var(--error-bg)] border border-[var(--error-border)] rounded text-xs text-[var(--error-text)]">
+        <div role="alert" className="mx-5 mt-2.5 px-3 py-2 bg-[var(--error-bg)] border border-[var(--error-border)] rounded text-xs text-[var(--error-text)]">
           {issue.error}
         </div>
       )}
 
       {/* Resume command */}
       {resumeCmd && (
-        <div className="mx-[18px] mt-2 px-3 py-2 bg-[var(--bg-inset)] border border-[var(--border-secondary)] rounded text-[11px] text-[var(--text-muted)] flex justify-between items-center">
+        <div className="mx-5 mt-2 px-3 py-2 bg-[var(--bg-inset)] border border-[var(--border-secondary)] rounded text-[11px] text-[var(--text-muted)] flex justify-between items-center">
           <span>
             <span className="text-[var(--text-faint)]" aria-hidden="true">$</span> <code>{resumeCmd}</code>
           </span>
@@ -104,7 +104,7 @@ export function DetailPanel({ issue, onClose }: { issue: TrackedIssue; onClose: 
       )}
 
       {/* Logs */}
-      <div className="px-[18px] pt-3 pb-4">
+      <div className="px-5 pt-3 pb-4">
         <LogViewer logs={issue.logs} />
       </div>
     </section>

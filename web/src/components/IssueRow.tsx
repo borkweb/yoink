@@ -30,10 +30,10 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       onKeyDown={handleKeyDown}
       aria-expanded={isSelected}
       aria-label={`${issue.issue.identifier}: ${issue.issue.title}, ${display}`}
-      className={`grid items-start cursor-pointer transition-all duration-150 border-b border-[var(--border-primary)] ${isSelected ? 'rounded-t-sm' : 'rounded-sm'}`}
+      className={`group grid items-baseline cursor-pointer transition-all duration-150 border-b border-[var(--border-primary)] ${isSelected ? 'rounded-t-sm' : 'rounded-sm'}`}
       style={{
         gridTemplateColumns: '80px 1fr 120px 70px',
-        padding: '10px 14px',
+        padding: '10px 20px',
         background: isSelected ? 'var(--bg-selected)' : 'transparent',
         borderLeft: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
         borderBottom: isSelected ? 'none' : undefined,
@@ -55,8 +55,8 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
         <span className="text-[var(--text-secondary)] text-[12.5px] whitespace-nowrap overflow-hidden text-ellipsis block">
           {issue.issue.title}
         </span>
-        {display === 'running' && (
-          <span className="flex gap-1 mt-1">
+        {['running-claude', 'creating-worktree', 'pushing', 'reviewing'].includes(issue.status) && (
+          <span className="flex gap-1 mt-1 opacity-30 group-hover:opacity-100 transition-opacity duration-150">
             <button
               onClick={(e) => { e.stopPropagation(); onAction('stopIssue', issue.issue.identifier, issue.startedAt); }}
               aria-label={`Stop ${issue.issue.identifier}`}
@@ -67,7 +67,7 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
           </span>
         )}
         {(display === 'failed' || display === 'stopped') && (
-          <span className="flex gap-1 mt-1">
+          <span className="flex gap-1 mt-1 opacity-30 group-hover:opacity-100 transition-opacity duration-150">
             <button
               onClick={(e) => { e.stopPropagation(); onAction('retryIssue', issue.issue.identifier, issue.startedAt); }}
               aria-label={`Retry ${issue.issue.identifier}`}
