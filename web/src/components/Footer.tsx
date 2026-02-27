@@ -10,9 +10,10 @@ interface Props {
   issueCount: number;
   projects: Project[];
   configPath: string;
+  onOpenConfig?: () => void;
 }
 
-export function Footer({ connected, issueCount, projects, configPath }: Props) {
+export function Footer({ connected, issueCount, projects, configPath, onOpenConfig }: Props) {
   const [showProjects, setShowProjects] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +43,12 @@ export function Footer({ connected, issueCount, projects, configPath }: Props) {
         {configPath && (
           <>
             {' · '}
-            <span>{configPath}</span>
+            <button
+              onClick={onOpenConfig}
+              className="bg-transparent border-none cursor-pointer p-0 text-[10px] text-[var(--text-dimmed)] hover:text-[var(--text-muted)]"
+            >
+              {configPath}
+            </button>
           </>
         )}
       </span>

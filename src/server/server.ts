@@ -2,6 +2,7 @@ import type { ServerWebSocket } from 'bun';
 import type { YoinkEngine, YoinkState } from '../engine';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
+import { getConfigPath } from '../config';
 
 interface WSData {
   handler: (state: YoinkState) => void;
@@ -17,6 +18,7 @@ const ALLOWED_ACTIONS = new Set([
   'deleteIssue',
   'reviewPR',
   'openTerminal',
+  'openConfig',
 ]);
 
 async function dispatchAction(
@@ -115,6 +117,34 @@ async function dispatchAction(
               break;
             } catch { continue; }
           }
+        }
+      }
+      break;
+    }
+    case 'openConfig': {
+      const configPath = getConfigPath();
+      if (process.platform === 'darwin') {
+        // Prefer Cursor > VS Code > PHPStorm > TextEdit
+        const editors = [
+          { app: 'Cursor', path: '/Applications/Cursor.app' },
+          { app: 'Visual Studio Code', path: '/Applications/Visual Studio Code.app' },
+          { app: 'PhpStorm', path: '/Applications/PhpStorm.app' },
+          { app: 'TextEdit', path: '/System/Applications/TextEdit.app' },
+        ];
+        for (const editor of editors) {
+          if (existsSync(editor.path)) {
+            Bun.spawn(['open', '-a', editor.app, configPath], { stdout: 'ignore', stderr: 'ignore' });
+            break;
+          }
+        }
+      } else {
+        // Linux: try common editors
+        const editors = ['cursor', 'code', 'phpstorm', 'xdg-open'];
+        for (const editor of editors) {
+          try {
+            Bun.spawn([editor, configPath], { stdout: 'ignore', stderr: 'ignore' });
+            break;
+          } catch { continue; }
         }
       }
       break;
