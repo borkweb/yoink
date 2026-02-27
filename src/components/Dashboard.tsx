@@ -76,17 +76,18 @@ export function Dashboard({ engine }: Props) {
   useInput(
     useCallback(
       (input: string, key: any) => {
+        if (input === 'q') {
+          engine.killActiveProcesses();
+          exit();
+          return;
+        }
+
         if (reviewMode) {
           if (key.escape) {
             setReviewMode(false);
             setReviewInput('');
             setReviewError(null);
           }
-          return;
-        }
-
-        if (input === 'q') {
-          engine.shutdown().then(() => exit());
           return;
         }
 

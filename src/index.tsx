@@ -189,4 +189,6 @@ const onTerminate = () => {
 process.on('SIGTERM', onTerminate);
 process.on('SIGINT', onTerminate);
 
-render(<App engine={engine} />);
+const { waitUntilExit } = render(<App engine={engine} />);
+await waitUntilExit();
+onTerminate();

@@ -1,0 +1,34 @@
+diff --git a/build/components/App.js b/build/components/App.js
+index 1234567..abcdefg 100644
+--- a/build/components/App.js
++++ b/build/components/App.js
+@@ -117,7 +117,7 @@ export default class App extends PureComponent {
+             if (this.rawModeEnabledCount === 0) {
+                 stdin.ref();
+                 stdin.setRawMode(true);
+-                stdin.addListener('readable', this.handleReadable);
++                stdin.addListener('data', this.handleData);
+             }
+             this.rawModeEnabledCount++;
+             return;
+@@ -125,13 +125,18 @@ export default class App extends PureComponent {
+         // Disable raw mode only when no components left that are using it
+         if (--this.rawModeEnabledCount === 0) {
+             stdin.setRawMode(false);
+-            stdin.removeListener('readable', this.handleReadable);
++            stdin.removeListener('data', this.handleData);
+             stdin.unref();
+         }
+     };
++    // Bun compatibility: use 'data' events instead of 'readable' (Bun#5240)
++    handleData = (chunk) => {
++        this.handleInput(chunk);
++        this.internal_eventEmitter.emit('input', chunk);
++    };
+     handleReadable = () => {
+         let chunk;
+-        // eslint-disable-next-line @typescript-eslint/ban-types
++        // eslint-disable-next-line @typescript-eslint/ban-types (kept for Node.js compat)
+         while ((chunk = this.props.stdin.read()) !== null) {
+             this.handleInput(chunk);
+             this.internal_eventEmitter.emit('input', chunk);
