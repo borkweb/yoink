@@ -1,8 +1,12 @@
 import { EventEmitter } from 'events';
+import { join, dirname } from 'path';
 import type { Config } from '../types';
 import { Processor, type ProcessorEvent } from '../services/processor';
 import { getConfigPath } from '../config';
 import type { YoinkEngineOptions, YoinkState, YoinkEngineEvents } from './types';
+
+const pkg = await Bun.file(join(dirname(dirname(import.meta.dir)), 'package.json')).json();
+const VERSION: string = pkg.version;
 
 /**
  * YoinkEngine owns all orchestration — Linear polling, worktree management,
@@ -112,6 +116,7 @@ export class YoinkEngine extends EventEmitter {
         repoDir: p.repoDir,
       })),
       configPath: getConfigPath(),
+      version: VERSION,
     };
   }
 

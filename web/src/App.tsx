@@ -28,6 +28,7 @@ export function App() {
     <div className="min-h-screen pb-8">
       <TopBar
         issues={state.issues}
+        version={state.version}
         paused={state.paused}
         isDark={isDark}
         onToggleTheme={toggleTheme}

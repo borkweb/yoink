@@ -11,12 +11,15 @@ import { createServer } from './server/server';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 
+const { version } = await Bun.file(join(dirname(import.meta.dir), 'package.json')).json();
+
 console.log(`
   __   __  ___   ___  _   _  _  __
   \\ \\ / / / _ \\ |_ _|| \\ | || |/ /
    \\ V / | | | | | | |  \\| || ' /
     | |  | |_| | | | | |\\  || . \\
     |_|   \\___/ |___||_| \\_||_|\\_\\
+                              v${version}
 `);
 
 const cli = meow(
