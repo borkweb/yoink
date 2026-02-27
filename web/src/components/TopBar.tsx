@@ -11,10 +11,13 @@ interface Props {
 }
 
 export function TopBar({ issues, title, polling, isDark, onToggleTheme }: Props) {
+  const runningStatuses = ['creating-worktree', 'running-claude', 'pushing', 'reviewing'];
+  const doneStatuses = ['pr-created', 'review-posted'];
+  const attentionStatuses = ['failed', 'stopped'];
   const counts = {
-    running: issues.filter((i) => mapStatus(i.status) === 'running').length,
-    completed: issues.filter((i) => mapStatus(i.status) === 'completed').length,
-    failed: issues.filter((i) => mapStatus(i.status) === 'failed' || mapStatus(i.status) === 'stopped').length,
+    running: issues.filter((i) => runningStatuses.includes(mapStatus(i.status))).length,
+    completed: issues.filter((i) => doneStatuses.includes(mapStatus(i.status))).length,
+    failed: issues.filter((i) => attentionStatuses.includes(mapStatus(i.status))).length,
     queued: issues.filter((i) => mapStatus(i.status) === 'queued').length,
   };
 

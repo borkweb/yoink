@@ -63,6 +63,7 @@ web/
 bun test                  # run all tests
 bun run src/index.tsx     # run the CLI in development
 cd web && bunx vite       # run web dashboard dev server (needs yoink running for WebSocket)
+cd web && bunx vite build # rebuild web UI (required after changing web/ files)
 ```
 
 ## Conventions

@@ -18,7 +18,7 @@ export function IssueTable({ issues, onAction }: Props) {
         role="row"
         className="grid text-[10px] text-[var(--text-dimmed)] uppercase tracking-wider border-b border-[var(--border-subtle)] bg-[var(--bg-chrome)] sticky top-0 z-10"
         style={{
-          gridTemplateColumns: '28px 80px 1fr 80px 70px 80px',
+          gridTemplateColumns: '28px 80px 1fr 120px 70px 80px',
           padding: '6px 14px',
         }}
       >

@@ -6,7 +6,7 @@ export function StatusPill({ status }: { status: string }) {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold tracking-wide"
+      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold tracking-wide whitespace-nowrap"
       style={{
         background: cfg.bg,
         border: `1px solid color-mix(in srgb, ${cfg.color} 20%, transparent)`,

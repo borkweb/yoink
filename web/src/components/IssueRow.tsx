@@ -31,7 +31,7 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       aria-label={`${issue.issue.identifier}: ${issue.issue.title}, ${display}`}
       className="grid items-center cursor-pointer transition-all duration-150 border-b border-[var(--border-primary)] rounded-sm"
       style={{
-        gridTemplateColumns: '28px 80px 1fr 80px 70px 80px',
+        gridTemplateColumns: '28px 80px 1fr 120px 70px 80px',
         padding: '10px 14px',
         background: isSelected ? 'var(--bg-hover)' : 'transparent',
         borderLeft: isSelected ? `2px solid ${PRIORITY_CONFIG[issue.issue.priority]?.color ?? 'var(--text-faint)'}` : '2px solid transparent',
