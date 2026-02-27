@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import type { Config } from '../types';
 import { Processor, type ProcessorEvent } from '../services/processor';
+import { getConfigPath } from '../config';
 import type { YoinkEngineOptions, YoinkState, YoinkEngineEvents } from './types';
 
 /**
@@ -110,6 +111,7 @@ export class YoinkEngine extends EventEmitter {
         name,
         repoDir: p.repoDir,
       })),
+      configPath: getConfigPath(),
     };
   }
 

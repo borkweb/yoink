@@ -23,6 +23,7 @@ export interface YoinkState {
   title: string;
   nextPollAt: number | null;
   projects: YoinkProject[];
+  configPath: string;
 }
 
 export interface YoinkEngineEvents {

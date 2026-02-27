@@ -42,7 +42,7 @@ export function App() {
         onOpenTerminal={(command) => dispatch('openTerminal', { command })}
       />
 
-      <Footer connected={connected} issueCount={visibleIssues.length} projects={state.projects} />
+      <Footer connected={connected} issueCount={visibleIssues.length} projects={state.projects} configPath={state.configPath} />
 
       {showPRModal && (
         <PRReviewModal

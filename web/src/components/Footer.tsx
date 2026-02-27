@@ -9,9 +9,10 @@ interface Props {
   connected: boolean;
   issueCount: number;
   projects: Project[];
+  configPath: string;
 }
 
-export function Footer({ connected, issueCount, projects }: Props) {
+export function Footer({ connected, issueCount, projects, configPath }: Props) {
   const [showProjects, setShowProjects] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +39,12 @@ export function Footer({ connected, issueCount, projects }: Props) {
         >
           {connected ? 'connected' : 'disconnected'}
         </span>
+        {configPath && (
+          <>
+            {' · '}
+            <span>{configPath}</span>
+          </>
+        )}
       </span>
       <div className="flex gap-3 items-center">
         <span>{issueCount} issues</span>
