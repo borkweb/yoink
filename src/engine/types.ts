@@ -8,6 +8,11 @@ export interface YoinkEngineOptions {
   concurrency?: number;
 }
 
+export interface YoinkProject {
+  name: string;
+  repoDir: string;
+}
+
 export interface YoinkState {
   issues: TrackedIssue[];
   paused: boolean;
@@ -17,6 +22,7 @@ export interface YoinkState {
   dryRun: boolean;
   title: string;
   nextPollAt: number | null;
+  projects: YoinkProject[];
 }
 
 export interface YoinkEngineEvents {

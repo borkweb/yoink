@@ -110,8 +110,9 @@ describe('YoinkEngine with multiple projects', () => {
     },
   };
 
-  it('throws when no project specified with multiple projects', async () => {
+  it('loads all projects when no project specified', async () => {
     const engine = new YoinkEngine(multiConfig);
-    await expect(engine.start()).rejects.toThrow('Multiple projects configured');
+    await engine.start();
+    expect(engine.getState().title).toBe('all projects');
   });
 });

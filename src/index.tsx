@@ -22,8 +22,8 @@ console.log(`
 const cli = meow(
   `
   Usage
-    $ yoink <project> [issue]     Process issues for a project
-    $ yoink --all                 Process all projects
+    $ yoink                       Process all configured projects
+    $ yoink <project> [issue]     Process a specific project (or single issue)
     $ yoink init                  Run the setup wizard
     $ yoink config                Show config file path
     $ yoink projects              List configured projects
@@ -31,14 +31,13 @@ const cli = meow(
   Options
     --dry-run        Fetch and display issues without processing
     --concurrency    Number of parallel Claude runs (default: from config)
-    --all            Process all configured projects
     --dev            Start Vite dev server for web UI with HMR
 
   Examples
+    $ yoink
     $ yoink myproject
     $ yoink myproject TEAM-123
-    $ yoink myproject --dry-run
-    $ yoink --all --concurrency 3
+    $ yoink --concurrency 3
 `,
   {
     importMeta: import.meta,

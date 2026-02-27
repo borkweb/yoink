@@ -76,9 +76,12 @@ export class YoinkEngine extends EventEmitter {
         const history = this.processor.getHistoryIssues(names[0]);
         if (history.length > 0) this.processor.mergeHistory(history);
       } else {
-        throw new Error(
-          `Multiple projects configured. Specify one: ${names.join(', ')}\nOr use --all`
-        );
+        this._title = 'all projects';
+        await this.processor.loadAllProjects();
+        for (const name of names) {
+          const history = this.processor.getHistoryIssues(name);
+          if (history.length > 0) this.processor.mergeHistory(history);
+        }
       }
     }
 
@@ -103,6 +106,10 @@ export class YoinkEngine extends EventEmitter {
       dryRun: this.options.dryRun ?? false,
       title: this._title,
       nextPollAt: this._nextPollAt,
+      projects: Object.entries(this.config.projects).map(([name, p]) => ({
+        name,
+        repoDir: p.repoDir,
+      })),
     };
   }
 

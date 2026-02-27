@@ -28,7 +28,6 @@ export function App() {
     <div className="min-h-screen pb-8">
       <TopBar
         issues={state.issues}
-        title={state.title}
         paused={state.paused}
         isDark={isDark}
         onToggleTheme={toggleTheme}
@@ -43,7 +42,7 @@ export function App() {
         onOpenTerminal={(command) => dispatch('openTerminal', { command })}
       />
 
-      <Footer connected={connected} issueCount={visibleIssues.length} />
+      <Footer connected={connected} issueCount={visibleIssues.length} projects={state.projects} />
 
       {showPRModal && (
         <PRReviewModal

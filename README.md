@@ -65,9 +65,9 @@ Environment variables override config values: `YOINK_LINEAR_API_KEY`, `YOINK_CON
 ## Usage
 
 ```bash
-yoink <project>              # process all matching issues for a project
+yoink                        # process all configured projects (default)
+yoink <project>              # process a single project
 yoink <project> TEAM-123     # process a single issue
-yoink --all                  # process all configured projects
 yoink --dry-run              # fetch and display issues without processing
 yoink init                   # run the setup wizard (auto-runs on first launch)
 yoink config                 # open config file in $EDITOR

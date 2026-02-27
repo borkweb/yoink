@@ -4,14 +4,13 @@ import { mapStatus } from '../lib/statusMap';
 
 interface Props {
   issues: TrackedIssue[];
-  title: string;
   paused: boolean;
   isDark: boolean;
   onToggleTheme: () => void;
   onTogglePause: () => void;
 }
 
-export function TopBar({ issues, title, paused, isDark, onToggleTheme, onTogglePause }: Props) {
+export function TopBar({ issues, paused, isDark, onToggleTheme, onTogglePause }: Props) {
   const [hovered, setHovered] = useState(false);
 
   const runningStatuses = ['creating-worktree', 'running-claude', 'pushing', 'reviewing'];
@@ -30,7 +29,6 @@ export function TopBar({ issues, title, paused, isDark, onToggleTheme, onToggleP
     <header className="flex justify-between items-center px-5 py-2.5 border-b border-[var(--border-primary)] bg-[var(--bg-chrome)]">
       <div className="flex items-baseline gap-3">
         <span className="text-xl font-black text-[var(--text-primary)] tracking-tight">yoink</span>
-        {title && <span className="text-[11px] text-[var(--text-dimmed)]">{title}</span>}
       </div>
 
       <div className="flex items-center gap-5 text-[11px]">
