@@ -4,7 +4,7 @@
 
 Yoink is a CLI tool that fetches Linear issues and processes them with Claude Code — creating worktrees, implementing fixes, and opening PRs. Built with Bun + TypeScript, React + Ink for the terminal UI.
 
-The architecture separates **orchestration** from **rendering**: a headless `YoinkEngine` owns all business logic and emits state events, while the Ink terminal UI is a thin subscriber. This enables future UI targets (web dashboard, API) without changing the core engine.
+The architecture separates **orchestration** from **rendering**: a headless `YoinkEngine` owns all business logic and emits state events, while the UIs are thin subscribers. Both the Ink terminal UI and the web dashboard consume the same engine state — the TUI via direct event subscription, the web dashboard via an HTTP/WebSocket server that bridges engine events to browser clients.
 
 ## High-Level Architecture
 
@@ -14,6 +14,7 @@ The architecture separates **orchestration** from **rendering**: a headless `Yoi
 │                    bin/yoink.ts → src/index.tsx          │
 │                                                          │
 │  Parses args, loads config, creates engine, renders UI   │
+│  Starts HTTP/WS server, optionally starts Vite dev       │
 └──────────────────────┬───────────────────────────────────┘
                        │
                        ▼
@@ -40,17 +41,27 @@ The architecture separates **orchestration** from **rendering**: a headless `Yoi
 │              emits 'state:changed'                       │
 └───────────────────────┼──────────────────────────────────┘
                         │
-              ┌─────────┴──────────┐
-              ▼                    ▼
-┌──────────────────────┐  ┌────────────────────┐
-│  Ink Terminal UI     │  │  (Future: Web UI,  │
-│  src/app.tsx         │  │   HTTP/WS server)  │
-│  src/components/     │  │                    │
-│                      │  │                    │
-│  Subscribes to       │  │                    │
-│  engine events,      │  │                    │
-│  renders dashboard   │  │                    │
-└──────────────────────┘  └────────────────────┘
+              ┌─────────┼──────────┐
+              ▼         │          ▼
+┌──────────────────┐    │   ┌──────────────────────────┐
+│ Ink Terminal UI  │    │   │  HTTP + WebSocket Server │
+│ src/app.tsx      │    │   │  src/server/server.ts    │
+│ src/components/  │    │   │                          │
+│                  │    │   │  REST: /api/state,       │
+│ Subscribes to    │    │   │        /api/actions      │
+│ engine events,   │    │   │  WS:   /ws (real-time)   │
+│ renders TUI      │    │   │  Static: web/dist/       │
+└──────────────────┘    │   └────────────┬─────────────┘
+                        │                │
+                        │                ▼
+                        │   ┌──────────────────────────┐
+                        │   │  Web Dashboard           │
+                        │   │  web/src/                │
+                        │   │                          │
+                        │   │  React + Vite + Tailwind │
+                        │   │  Connects via WebSocket  │
+                        │   │  Light/dark theme        │
+                        │   └──────────────────────────┘
 ```
 
 ## Project Structure
@@ -102,6 +113,38 @@ src/
     pr.ts                     PR URL parsing, metadata fetching via GitHub CLI
     shell.ts                  splitCommand() — whitespace splitting with tilde expansion
     pidlock.ts                PID-based single-instance lock (~/.config/yoink/yoink.pid)
+
+  server/
+    server.ts                 HTTP + WebSocket server (Bun.serve) — REST API, real-time
+                              state push, static file serving, action dispatch
+    server.test.ts            Server tests (HTTP endpoints, WebSocket protocol)
+
+web/
+  index.html                  SPA entry point with theme-init script (prevents flash)
+  vite.config.ts              Vite config with proxy to yoink server on port 7890
+  src/
+    App.tsx                   Root component — state, theme, routing to sub-components
+    hooks/
+      useYoinkState.ts        WebSocket hook — connects to /ws, receives state snapshots,
+                              dispatches actions, auto-reconnects with backoff
+      useTheme.ts             OS-preference-aware light/dark theme with localStorage persist
+    components/
+      TopBar.tsx              Header — project title, active/done counts, pause toggle,
+                              theme toggle (sun/moon)
+      Toolbar.tsx             Action bar — "Review PR" button
+      IssueTable.tsx          Issue list with column headers, expandable detail panel
+      IssueRow.tsx            Single issue row — identifier link, title, status pill, time,
+                              action buttons (stop/retry/continue/delete) with hover reveal
+      StatusPill.tsx          Colored status badge with pulse animation for running items
+      DetailPanel.tsx         Expanded issue details — branch, PR link, elapsed time,
+                              Linear link, error banner, resume command with open/copy,
+                              log viewer
+      LogViewer.tsx           ANSI-rendered log output with auto-scroll
+      PRReviewModal.tsx       Modal for submitting PR review requests
+      Footer.tsx              Connection status indicator, issue count
+    lib/
+      formatElapsed.ts        Human-readable elapsed time formatting
+      statusMap.ts            Maps engine statuses to display labels, colors, badge styles
 
 skills/
   workflow/SKILL.md           End-to-end Linear issue flow (understand → implement →
@@ -179,6 +222,26 @@ Processor mutates TrackedIssue → emits ProcessorEvent
   → YoinkEngine listener → emits 'state:changed' with YoinkState snapshot
     → Dashboard setState → React re-render
 ```
+
+### Web Dashboard
+
+The web dashboard is an alternative UI that runs alongside the terminal UI. It connects to the same engine via an HTTP/WebSocket server.
+
+**Server** (`src/server/server.ts`):
+- `GET /api/state` — returns current `YoinkState` as JSON
+- `POST /api/actions` — dispatches actions (pause, resume, shutdown, stopIssue, retryIssue, continueIssue, deleteIssue, reviewPR, openTerminal)
+- `GET /ws` — WebSocket endpoint; sends `state:full` on connect, `state:changed` on updates; accepts action messages from clients
+- Static file serving from `web/dist/` with SPA fallback
+
+**Client** (`web/src/`):
+- React + Vite + Tailwind CSS 4
+- `useYoinkState` hook manages the WebSocket connection with auto-reconnect and exposes `dispatch()` for sending actions
+- `useTheme` hook provides OS-preference-aware light/dark mode with localStorage persistence and manual toggle
+- CSS custom properties define all theme colors (`:root` for light, `.dark` for dark); an inline script in `index.html` prevents flash of wrong theme on load
+- All issue actions (stop, retry, continue, delete, review PR) are available through the UI
+- Resume commands include an "open" button that spawns a new terminal tab on the server (iTerm2 > Terminal.app on macOS; gnome-terminal/konsole/xfce4-terminal/xterm on Linux)
+
+**Development**: Run `yoink --dev` to start the Vite dev server with HMR on port 5173, proxying API/WS requests to the yoink server on port 7890. In production, `web/dist/` is built ahead of time and served directly by the Bun HTTP server.
 
 ### PR Review Flow
 

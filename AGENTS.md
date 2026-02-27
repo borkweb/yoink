@@ -8,7 +8,8 @@
 
 - **Runtime**: Bun
 - **Language**: TypeScript (strict)
-- **UI**: React 18 + Ink 5 (terminal), React + Vite + Tailwind (web dashboard)
+- **UI (terminal)**: React 18 + Ink 5
+- **UI (web)**: React 18 + Vite + Tailwind CSS 4 (CSS custom properties for light/dark theming)
 - **Config**: TOML via `smol-toml`
 - **CLI**: `meow`
 - **Testing**: `bun test` (built-in test runner)
@@ -53,8 +54,26 @@ src/
     github.ts              GitHub CLI wrapper for PR creation
     shell.ts               splitCommand() — splits command strings with tilde expansion
 web/
-  src/                     React + Vite web dashboard (connects via WebSocket to server)
+  index.html               SPA entry with inline theme-init script (prevents flash)
   vite.config.ts           Vite config with proxy to yoink server on port 7890
+  src/
+    App.tsx                Root component — wires state, theme, and child components
+    hooks/
+      useYoinkState.ts     WebSocket hook — auto-reconnect, state snapshots, action dispatch
+      useTheme.ts          OS-preference light/dark theme with localStorage + manual toggle
+    components/
+      TopBar.tsx           Header with title, counts, pause toggle, theme toggle
+      Toolbar.tsx          Action bar (Review PR button)
+      IssueTable.tsx       Issue list with expandable detail panels
+      IssueRow.tsx         Row with identifier link, title, status pill, time, action buttons
+      StatusPill.tsx       Colored status badge (pulse for running)
+      DetailPanel.tsx      Metadata, error banner, resume command (open/copy), log viewer
+      LogViewer.tsx        ANSI-rendered log output
+      PRReviewModal.tsx    PR review submission modal
+      Footer.tsx           Connection status, issue count
+    lib/
+      formatElapsed.ts     Human-readable elapsed time
+      statusMap.ts         Engine status → display label/color/badge mapping
 ```
 
 ## Commands
@@ -79,6 +98,11 @@ cd web && bunx vite build # rebuild web UI (required after changing web/ files)
 - Use `splitCommand()` from `src/lib/shell.ts` when spawning `githubCommand` — it splits on whitespace and expands `~/` (needed for multi-word commands like `proxychains4 -q -f ~/.proxychains.conf gh`)
 - PR titles are prefixed with a robot emoji programmatically after creation via the GitHub CLI
 - Web server runs on `web_port` (default 7890) — serves REST API (`/api/state`, `/api/actions`) + WebSocket (`/ws`) for real-time state
+- Web dashboard uses CSS custom properties for all colors (`:root` = light, `.dark` = dark) — never use hardcoded hex values in components
+- Web components use Tailwind bracket notation with CSS variables: `bg-[var(--bg-page)]`, `text-[var(--text-secondary)]`
+- The `useYoinkState` hook dispatches actions via WebSocket: `dispatch('actionName', { ...params })`
+- The server's `dispatchAction()` validates actions against an `ALLOWED_ACTIONS` set before executing
+- The `openTerminal` action spawns a new terminal tab on the server machine (iTerm2 > Terminal.app on macOS; gnome-terminal/konsole/xfce4-terminal/xterm on Linux)
 
 ## Testing
 

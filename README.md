@@ -76,6 +76,8 @@ yoink projects               # list configured projects
 
 ## Dashboard
 
+### Terminal UI
+
 The terminal UI shows a live view of all issues with keyboard controls:
 
 | Key       | Action                                         |
@@ -91,6 +93,23 @@ The terminal UI shows a live view of all issues with keyboard controls:
 | `q`       | Graceful shutdown                              |
 
 Expanding a finished ticket shows a `claude --resume` command you can copy-paste to continue the session interactively in your terminal.
+
+### Web Dashboard
+
+A browser-based dashboard runs alongside the terminal UI on port 7890 (configurable via `web_port` in config). It provides the same functionality as the TUI — view issues, stop/retry/continue/delete, trigger PR reviews, and open resume commands in a new terminal tab.
+
+Features:
+- **Real-time updates** via WebSocket — state changes appear instantly
+- **Light/dark mode** — follows OS preference with manual toggle, persisted to localStorage
+- **Issue actions** — stop running issues, retry/continue/delete failed ones, all with click-to-confirm for destructive actions
+- **Resume commands** — copy to clipboard or open directly in a new terminal tab (iTerm2, Terminal.app, gnome-terminal, konsole, xfce4-terminal, xterm)
+- **PR reviews** — submit PR review requests from a modal dialog
+- **Issue/PR links** — identifiers link to Linear, PR numbers link to GitHub
+
+For development with hot reload:
+```bash
+yoink myproject --dev    # starts Vite dev server on port 5173 with HMR
+```
 
 ## Skills
 
@@ -115,6 +134,8 @@ Issue state is saved to `~/.config/yoink/state.json`. On startup, issues from th
 ## Development
 
 ```bash
-bun test             # run tests
-bun run src/index.tsx # run without linking
+bun test                  # run tests
+bun run src/index.tsx     # run without linking
+cd web && bunx vite       # run web dashboard dev server (needs yoink running)
+cd web && bunx vite build # rebuild web UI after changes
 ```
