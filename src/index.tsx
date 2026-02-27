@@ -13,14 +13,14 @@ import { existsSync } from 'fs';
 
 const { version } = await Bun.file(join(dirname(import.meta.dir), 'package.json')).json();
 
-console.log(`
+console.log(`\x1b[33m
   __   __  ___   ___  _   _  _  __
   \\ \\ / / / _ \\ |_ _|| \\ | || |/ /
    \\ V / | | | | | | |  \\| || ' /
     | |  | |_| | | | | |\\  || . \\
     |_|   \\___/ |___||_| \\_||_|\\_\\
-                              v${version}
-`);
+                              \x1b[90mv${version}
+\x1b[0m`);
 
 const cli = meow(
   `
