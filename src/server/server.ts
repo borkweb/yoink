@@ -38,16 +38,16 @@ async function dispatchAction(
       await engine.shutdown();
       break;
     case 'stopIssue':
-      engine.stopIssue(body.identifier as string);
+      engine.stopIssue(body.identifier as string, body.startedAt as number | undefined);
       break;
     case 'retryIssue':
-      engine.retryIssue(body.identifier as string);
+      engine.retryIssue(body.identifier as string, body.startedAt as number | undefined);
       break;
     case 'continueIssue':
-      engine.continueIssue(body.identifier as string);
+      engine.continueIssue(body.identifier as string, body.startedAt as number | undefined);
       break;
     case 'deleteIssue':
-      engine.deleteIssue(body.identifier as string);
+      engine.deleteIssue(body.identifier as string, body.startedAt as number | undefined);
       break;
     case 'reviewPR':
       await engine.reviewPR({

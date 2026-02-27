@@ -135,20 +135,20 @@ export class YoinkEngine extends EventEmitter {
 
   // ── Issue actions ──────────────────────────────────────────
 
-  stopIssue(identifier: string): void {
-    this.processor.stopIssue(identifier);
+  stopIssue(identifier: string, startedAt?: number): void {
+    this.processor.stopIssue(identifier, startedAt);
   }
 
-  retryIssue(identifier: string): void {
-    this.processor.retryIssue(identifier);
+  retryIssue(identifier: string, startedAt?: number): void {
+    this.processor.retryIssue(identifier, startedAt);
   }
 
-  continueIssue(identifier: string): void {
-    this.processor.continueIssue(identifier);
+  continueIssue(identifier: string, startedAt?: number): void {
+    this.processor.continueIssue(identifier, startedAt);
   }
 
-  deleteIssue(identifier: string): void {
-    this.processor.deleteIssue(identifier);
+  deleteIssue(identifier: string, startedAt?: number): void {
+    this.processor.deleteIssue(identifier, startedAt);
   }
 
   async reviewPR(input: {

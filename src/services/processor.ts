@@ -80,7 +80,10 @@ export class Processor {
       }
     }
 
-    return Object.entries(projectState.issues).map(([identifier, persisted]) => {
+    return Object.entries(projectState.issues).map(([key, persisted]) => {
+      // Keys may be "BIGR-536" (legacy) or "BIGR-536:1772140013735" (new)
+      const identifier = key.includes(':') ? key.slice(0, key.lastIndexOf(':')) : key;
+
       // For PR-* items missing prUrl, try to reconstruct from siblings
       let prUrl = persisted.prUrl ?? undefined;
       if (!prUrl && identifier.startsWith('PR-')) {
@@ -113,8 +116,14 @@ export class Processor {
   }
 
   mergeHistory(historyIssues: TrackedIssue[]): void {
-    const existingIds = new Set(this.issues.map((i) => i.issue.identifier));
-    const unique = historyIssues.filter((h) => !existingIds.has(h.issue.identifier));
+    // Exclude history items that match an active item's identifier AND startedAt
+    // (same attempt already in memory), but keep older attempts of the same identifier
+    const activeKeys = new Set(
+      this.issues.map((i) => `${i.issue.identifier}:${i.startedAt ?? 0}`)
+    );
+    const unique = historyIssues.filter(
+      (h) => !activeKeys.has(`${h.issue.identifier}:${h.startedAt ?? 0}`)
+    );
     this.issues = [...unique, ...this.issues];
     this.emit({ type: 'update', issues: this.getIssues() });
   }
@@ -224,8 +233,15 @@ export class Processor {
     }
   }
 
-  stopIssue(identifier: string): void {
-    const tracked = this.issues.find((i) => i.issue.identifier === identifier);
+  private findIssue(identifier: string, startedAt?: number): TrackedIssue | undefined {
+    if (startedAt) {
+      return this.issues.find((i) => i.issue.identifier === identifier && i.startedAt === startedAt);
+    }
+    return this.issues.find((i) => i.issue.identifier === identifier);
+  }
+
+  stopIssue(identifier: string, startedAt?: number): void {
+    const tracked = this.findIssue(identifier, startedAt);
     if (!tracked) return;
 
     const activeStatuses = ['running-claude', 'creating-worktree', 'pushing', 'reviewing'];
@@ -238,8 +254,8 @@ export class Processor {
     if (proc) proc.kill();
   }
 
-  retryIssue(identifier: string): void {
-    const tracked = this.issues.find((i) => i.issue.identifier === identifier);
+  retryIssue(identifier: string, startedAt?: number): void {
+    const tracked = this.findIssue(identifier, startedAt);
     if (!tracked || (tracked.status !== 'failed' && tracked.status !== 'stopped')) return;
 
     const project = this.config.projects[tracked.project];
@@ -268,8 +284,8 @@ export class Processor {
     });
   }
 
-  continueIssue(identifier: string): void {
-    const tracked = this.issues.find((i) => i.issue.identifier === identifier);
+  continueIssue(identifier: string, startedAt?: number): void {
+    const tracked = this.findIssue(identifier, startedAt);
     if (!tracked || (tracked.status !== 'failed' && tracked.status !== 'stopped')) return;
 
     this.updateIssue(tracked, {
@@ -286,8 +302,8 @@ export class Processor {
     });
   }
 
-  deleteIssue(identifier: string): void {
-    const tracked = this.issues.find((i) => i.issue.identifier === identifier);
+  deleteIssue(identifier: string, startedAt?: number): void {
+    const tracked = this.findIssue(identifier, startedAt);
     if (!tracked || (tracked.status !== 'failed' && tracked.status !== 'stopped')) return;
 
     const project = this.config.projects[tracked.project];
@@ -505,7 +521,10 @@ export class Processor {
   private persistIssue(tracked: TrackedIssue): void {
     if (!tracked.issue.identifier || tracked.status === 'queued') return;
 
-    saveIssueState(this.statePath, tracked.project, tracked.issue.identifier, {
+    const persistKey = tracked.startedAt
+      ? `${tracked.issue.identifier}:${tracked.startedAt}`
+      : tracked.issue.identifier;
+    saveIssueState(this.statePath, tracked.project, persistKey, {
       status: tracked.status,
       branch: `linear/${tracked.issue.identifier.toLowerCase()}`,
       title: tracked.issue.title,

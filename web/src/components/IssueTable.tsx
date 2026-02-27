@@ -5,7 +5,7 @@ import { DetailPanel } from './DetailPanel';
 
 interface Props {
   issues: TrackedIssue[];
-  onAction: (action: string, identifier: string) => void;
+  onAction: (action: string, identifier: string, startedAt?: number) => void;
 }
 
 export function IssueTable({ issues, onAction }: Props) {
@@ -18,7 +18,7 @@ export function IssueTable({ issues, onAction }: Props) {
         role="row"
         className="grid text-[10px] text-[var(--text-dimmed)] uppercase tracking-wider border-b border-[var(--border-subtle)] bg-[var(--bg-chrome)] sticky top-0 z-10"
         style={{
-          gridTemplateColumns: '80px 1fr 120px 70px 80px',
+          gridTemplateColumns: '80px 1fr 120px 70px',
           padding: '6px 14px',
         }}
       >
@@ -26,25 +26,25 @@ export function IssueTable({ issues, onAction }: Props) {
         <span role="columnheader">Title</span>
         <span role="columnheader">Status</span>
         <span role="columnheader" className="text-right">Time</span>
-        <span role="columnheader" className="text-right">Actions</span>
       </div>
 
       {/* Rows */}
-      {issues.map((issue) => (
-        <div key={issue.issue.identifier} role="rowgroup">
-          <IssueRow
-            issue={issue}
-            isSelected={selectedId === issue.issue.identifier}
-            onClick={() => setSelectedId(
-              selectedId === issue.issue.identifier ? null : issue.issue.identifier
+      {issues.map((issue) => {
+        const uid = `${issue.issue.identifier}:${issue.startedAt ?? 0}`;
+        return (
+          <div key={uid} role="rowgroup">
+            <IssueRow
+              issue={issue}
+              isSelected={selectedId === uid}
+              onClick={() => setSelectedId(selectedId === uid ? null : uid)}
+              onAction={onAction}
+            />
+            {selectedId === uid && (
+              <DetailPanel issue={issue} onClose={() => setSelectedId(null)} />
             )}
-            onAction={onAction}
-          />
-          {selectedId === issue.issue.identifier && (
-            <DetailPanel issue={issue} onClose={() => setSelectedId(null)} />
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

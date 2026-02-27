@@ -39,7 +39,7 @@ export function App() {
 
       <IssueTable
         issues={visibleIssues}
-        onAction={(action, identifier) => dispatch(action, { identifier })}
+        onAction={(action, identifier, startedAt) => dispatch(action, { identifier, startedAt })}
       />
 
       <Footer connected={connected} issueCount={visibleIssues.length} />

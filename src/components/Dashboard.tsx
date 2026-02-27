@@ -24,7 +24,8 @@ export function Dashboard({ engine }: Props) {
   const [reviewInput, setReviewInput] = useState('');
   const [reviewError, setReviewError] = useState<string | null>(null);
 
-  const { issues, paused, done, title, dryRun, nextPollAt } = state;
+  const { paused, done, title, dryRun, nextPollAt } = state;
+  const issues = state.issues.filter((i) => i.status !== 'abandoned');
 
   useEffect(() => {
     const handler = (newState: YoinkState) => setState(newState);
@@ -103,7 +104,7 @@ export function Dashboard({ engine }: Props) {
         if (input === 's') {
           const selected = issues[focusIndex];
           if (selected && ['running-claude', 'creating-worktree', 'pushing'].includes(selected.status)) {
-            engine.stopIssue(selected.issue.identifier);
+            engine.stopIssue(selected.issue.identifier, selected.startedAt);
           }
           return;
         }
@@ -111,7 +112,7 @@ export function Dashboard({ engine }: Props) {
         if (input === 'r') {
           const selected = issues[focusIndex];
           if (selected?.status === 'failed' || selected?.status === 'stopped') {
-            engine.retryIssue(selected.issue.identifier);
+            engine.retryIssue(selected.issue.identifier, selected.startedAt);
           }
           return;
         }
@@ -119,7 +120,7 @@ export function Dashboard({ engine }: Props) {
         if (input === 'c') {
           const selected = issues[focusIndex];
           if (selected?.status === 'failed' || selected?.status === 'stopped') {
-            engine.continueIssue(selected.issue.identifier);
+            engine.continueIssue(selected.issue.identifier, selected.startedAt);
           }
           return;
         }
@@ -127,7 +128,7 @@ export function Dashboard({ engine }: Props) {
         if (input === 'd') {
           const selected = issues[focusIndex];
           if (selected?.status === 'failed' || selected?.status === 'stopped') {
-            engine.deleteIssue(selected.issue.identifier);
+            engine.deleteIssue(selected.issue.identifier, selected.startedAt);
           }
           return;
         }
@@ -155,18 +156,19 @@ export function Dashboard({ engine }: Props) {
     )
   );
 
-  const historyIssues = issues.filter((i) => i.isHistory);
-  const newIssues = issues.filter((i) => !i.isHistory);
+  const terminalStatuses = ['pr-created', 'review-posted', 'failed', 'stopped'];
+  const historyIssues = issues.filter((i) => i.isHistory || terminalStatuses.includes(i.status));
+  const newIssues = issues.filter((i) => !i.isHistory && !terminalStatuses.includes(i.status));
   const projects = [...new Set(newIssues.map((i) => i.project))];
   const multiProject = projects.length > 1;
 
-  const renderRow = (tracked: TrackedIssue, globalIdx: number) => (
-    <React.Fragment key={tracked.issue.identifier}>
+  const renderRow = (tracked: TrackedIssue, globalIdx: number, asHistory?: boolean) => (
+    <React.Fragment key={`${tracked.issue.identifier}:${tracked.startedAt ?? 0}`}>
       <IssueRow
         tracked={tracked}
         focused={globalIdx === focusIndex}
         expanded={globalIdx === expandedIndex}
-        isHistory={tracked.isHistory}
+        isHistory={asHistory ?? tracked.isHistory}
       />
       {globalIdx === expandedIndex && <LogPanel tracked={tracked} />}
     </React.Fragment>
@@ -191,7 +193,7 @@ export function Dashboard({ engine }: Props) {
             <Box>
               <Text dimColor bold>Recent (last 24h)</Text>
             </Box>
-            {historyIssues.map((tracked) => renderRow(tracked, issues.indexOf(tracked)))}
+            {historyIssues.map((tracked) => renderRow(tracked, issues.indexOf(tracked), true))}
           </Box>
         )}
 
