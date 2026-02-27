@@ -39,16 +39,18 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = isSelected ? 'var(--bg-hover)' : 'transparent'; }}
     >
       <span role="cell" className="text-xs">
-        {issue.issue.url
-          ? <a href={issue.issue.url} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>{issue.issue.identifier}</a>
-          : <span className="text-[var(--text-subtle)]">{issue.issue.identifier}</span>
+        {issue.issue.identifier.startsWith('PR-') && issue.prUrl
+          ? <a href={issue.prUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>PR #{issue.issue.identifier.slice(3)}</a>
+          : issue.issue.url
+            ? <a href={issue.issue.url} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>{issue.issue.identifier}</a>
+            : <span className="text-[var(--text-subtle)]">{issue.issue.identifier}</span>
         }
       </span>
       <span role="cell" className="text-[var(--text-secondary)] text-[12.5px] whitespace-nowrap overflow-hidden text-ellipsis pr-3">
         {issue.issue.title}
       </span>
       <span role="cell">
-        <StatusPill status={issue.status} />
+        <StatusPill status={issue.status} prUrl={issue.prUrl} />
       </span>
       <span role="cell" className="text-[var(--text-faint)] text-[11px] text-right">
         {formatElapsed(issue.startedAt, issue.completedAt)}

@@ -1,10 +1,10 @@
 import { mapStatus, STATUS_CONFIG } from '../lib/statusMap';
 
-export function StatusPill({ status }: { status: string }) {
+export function StatusPill({ status, prUrl }: { status: string; prUrl?: string }) {
   const display = mapStatus(status);
   const cfg = STATUS_CONFIG[display];
 
-  return (
+  const pill = (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold tracking-wide whitespace-nowrap"
       style={{
@@ -21,4 +21,14 @@ export function StatusPill({ status }: { status: string }) {
       {cfg.label}
     </span>
   );
+
+  if (prUrl) {
+    return (
+      <a href={prUrl} target="_blank" rel="noopener noreferrer" className="hover:opacity-80" onClick={(e) => e.stopPropagation()}>
+        {pill}
+      </a>
+    );
+  }
+
+  return pill;
 }
