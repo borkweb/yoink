@@ -1,27 +1,33 @@
 import React, { useState, useMemo } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
-import { SetupWizard } from './SetupWizard';
+import { SetupWizard, type SetupWizardInitialData } from './SetupWizard';
 import { CONFIG_PATH, loadConfig } from '../config';
 
 export function InitOverwrite() {
-  const existingData = useMemo(() => {
+  const existingData = useMemo((): SetupWizardInitialData | undefined => {
     try {
       const config = loadConfig();
-      const [projectName, project] = Object.entries(config.projects)[0] ?? [];
+      const projects = Object.entries(config.projects).map(([name, project]) => ({
+        projectName: name,
+        repoDir: project.repoDir ?? '',
+        linearTeam: project.linearTeam ?? '',
+        linearAssignee: project.linearAssignee ?? '',
+        linearLabel: project.linearLabel ?? '',
+        baseBranch: project.baseBranch ?? 'main',
+      }));
+
+      // Pull githubCommand and allowedTools from the first project (shared across all)
+      const firstProject = Object.values(config.projects)[0];
+
       return {
         linearApiKey: config.linear.apiKey,
-        projectName: projectName ?? '',
-        repoDir: project?.repoDir ?? '',
-        linearTeam: project?.linearTeam ?? '',
-        linearAssignee: project?.linearAssignee ?? '',
-        linearLabel: project?.linearLabel ?? '',
-        baseBranch: project?.baseBranch ?? 'main',
         claudePlugins: config.defaults.claudePlugins.join(', '),
         concurrency: String(config.defaults.concurrency),
         maxTurns: String(config.defaults.maxTurns),
         pollInterval: String(config.defaults.pollInterval),
-        githubCommand: project?.githubCommand ?? 'gh',
-        allowedTools: project?.allowedTools ?? '',
+        githubCommand: firstProject?.githubCommand ?? 'gh',
+        allowedTools: firstProject?.allowedTools ?? '',
+        projects,
       };
     } catch {
       return undefined;
