@@ -19,7 +19,13 @@ function buildResumeCmd(tracked: TrackedIssue): string | null {
   return `cd ${normalizePath(tracked.worktreeDir)} && ${resume}`;
 }
 
-export function DetailPanel({ issue, onClose }: { issue: TrackedIssue; onClose: () => void }) {
+interface DetailPanelProps {
+  issue: TrackedIssue;
+  onClose: () => void;
+  onOpenTerminal?: (command: string) => void;
+}
+
+export function DetailPanel({ issue, onClose, onOpenTerminal }: DetailPanelProps) {
   const branch = issue.worktreeDir
     ? issue.worktreeDir.split('/').pop()
     : null;
@@ -93,13 +99,24 @@ export function DetailPanel({ issue, onClose }: { issue: TrackedIssue; onClose: 
           <span>
             <span className="text-[var(--text-faint)]" aria-hidden="true">$</span> <code>{resumeCmd}</code>
           </span>
-          <button
-            onClick={() => navigator.clipboard.writeText(resumeCmd)}
-            aria-label="Copy resume command to clipboard"
-            className="px-2 py-0.5 text-[10px] rounded cursor-pointer bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)]"
-          >
-            copy
-          </button>
+          <span className="flex gap-1">
+            {onOpenTerminal && (
+              <button
+                onClick={() => onOpenTerminal(resumeCmd)}
+                aria-label="Open resume command in terminal"
+                className="px-2 py-0.5 text-[10px] rounded cursor-pointer bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)]"
+              >
+                open
+              </button>
+            )}
+            <button
+              onClick={() => navigator.clipboard.writeText(resumeCmd)}
+              aria-label="Copy resume command to clipboard"
+              className="px-2 py-0.5 text-[10px] rounded cursor-pointer bg-[var(--btn-secondary-bg)] border border-[var(--btn-secondary-border)] text-[var(--btn-secondary-text)]"
+            >
+              copy
+            </button>
+          </span>
         </div>
       )}
 

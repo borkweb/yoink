@@ -6,9 +6,10 @@ import { DetailPanel } from './DetailPanel';
 interface Props {
   issues: TrackedIssue[];
   onAction: (action: string, identifier: string, startedAt?: number) => void;
+  onOpenTerminal?: (command: string) => void;
 }
 
-export function IssueTable({ issues, onAction }: Props) {
+export function IssueTable({ issues, onAction, onOpenTerminal }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
@@ -40,7 +41,7 @@ export function IssueTable({ issues, onAction }: Props) {
               onAction={onAction}
             />
             {selectedId === uid && (
-              <DetailPanel issue={issue} onClose={() => setSelectedId(null)} />
+              <DetailPanel issue={issue} onClose={() => setSelectedId(null)} onOpenTerminal={onOpenTerminal} />
             )}
           </div>
         );

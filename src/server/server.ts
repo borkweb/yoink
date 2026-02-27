@@ -16,6 +16,7 @@ const ALLOWED_ACTIONS = new Set([
   'continueIssue',
   'deleteIssue',
   'reviewPR',
+  'openTerminal',
 ]);
 
 async function dispatchAction(
@@ -56,6 +57,68 @@ async function dispatchAction(
         projectName: body.projectName as string | undefined,
       });
       break;
+    case 'openTerminal': {
+      const cmd = body.command as string;
+      if (typeof cmd === 'string' && cmd.length > 0) {
+        if (process.platform === 'darwin') {
+          // Prefer iTerm2 > Terminal.app (both support new-tab)
+          if (existsSync('/Applications/iTerm.app')) {
+            const escaped = cmd.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            Bun.spawn(['osascript', '-e', [
+              'tell application "iTerm2"',
+              '  activate',
+              '  if (count of windows) = 0 then',
+              '    create window with default profile',
+              '  else',
+              '    tell current window to create tab with default profile',
+              '  end if',
+              '  tell current session of current window',
+              `    write text "${escaped}"`,
+              '  end tell',
+              'end tell',
+            ].join('\n')], {
+              stdout: 'ignore',
+              stderr: 'ignore',
+            });
+          } else {
+            const escaped = cmd.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            Bun.spawn(['osascript', '-e', [
+              'tell application "Terminal"',
+              '  activate',
+              '  if (count of windows) > 0 then',
+              '    tell application "System Events" to keystroke "t" using command down',
+              '    delay 0.3',
+              `    do script "${escaped}" in front window`,
+              '  else',
+              `    do script "${escaped}"`,
+              '  end if',
+              'end tell',
+            ].join('\n')], {
+              stdout: 'ignore',
+              stderr: 'ignore',
+            });
+          }
+        } else {
+          // Linux: try common terminal emulators, prefer tabs where supported
+          const terminals = ['x-terminal-emulator', 'gnome-terminal', 'konsole', 'xfce4-terminal', 'xterm'];
+          for (const term of terminals) {
+            try {
+              if (term === 'gnome-terminal') {
+                Bun.spawn([term, '--tab', '--', 'bash', '-c', `${cmd}; exec bash`], { stdout: 'ignore', stderr: 'ignore' });
+              } else if (term === 'konsole') {
+                Bun.spawn([term, '--new-tab', '-e', `bash -c '${cmd.replace(/'/g, "'\\''")}; exec bash'`], { stdout: 'ignore', stderr: 'ignore' });
+              } else if (term === 'xfce4-terminal') {
+                Bun.spawn([term, '--tab', '-e', `bash -c '${cmd.replace(/'/g, "'\\''")}; exec bash'`], { stdout: 'ignore', stderr: 'ignore' });
+              } else {
+                Bun.spawn([term, '-e', `bash -c '${cmd.replace(/'/g, "'\\''")}; exec bash'`], { stdout: 'ignore', stderr: 'ignore' });
+              }
+              break;
+            } catch { continue; }
+          }
+        }
+      }
+      break;
+    }
   }
 
   return true;

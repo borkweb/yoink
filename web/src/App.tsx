@@ -40,6 +40,7 @@ export function App() {
       <IssueTable
         issues={visibleIssues}
         onAction={(action, identifier, startedAt) => dispatch(action, { identifier, startedAt })}
+        onOpenTerminal={(command) => dispatch('openTerminal', { command })}
       />
 
       <Footer connected={connected} issueCount={visibleIssues.length} />
