@@ -371,6 +371,10 @@ export class Processor {
       const claudeResult = await result;
       this.activeProcesses.delete(identifier);
 
+      if (claudeResult.sessionId) {
+        tracked.sessionId = claudeResult.sessionId;
+      }
+
       if (claudeResult.exitCode !== 0) {
         throw new Error(`Claude exited with code ${claudeResult.exitCode}`);
       }

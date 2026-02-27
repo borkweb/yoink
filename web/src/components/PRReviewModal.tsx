@@ -24,9 +24,11 @@ export function PRReviewModal({ onSubmit, onClose }: Props) {
     if (!url.trim()) return;
 
     // Try to parse as a PR URL: https://github.com/org/repo/pull/123
-    const urlMatch = url.match(/github[^/]*\/([^/]+\/[^/]+)\/pull\/(\d+)/);
+    const urlMatch = url.match(/https?:\/\/([^/]+)\/([^/]+\/[^/]+)\/pull\/(\d+)/);
     if (urlMatch) {
-      onSubmit(Number(urlMatch[2]), urlMatch[1]);
+      const [, host, ownerRepo, prNum] = urlMatch;
+      const repoSlug = host === 'github.com' ? ownerRepo : `${host}/${ownerRepo}`;
+      onSubmit(Number(prNum), repoSlug);
       return;
     }
 

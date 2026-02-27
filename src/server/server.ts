@@ -147,8 +147,9 @@ export function createServer(engine: YoinkEngine, port: number) {
         try {
           const body = JSON.parse(typeof msg === 'string' ? msg : msg.toString());
           await dispatchAction(engine, body);
-        } catch {
-          // Ignore malformed messages
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          ws.send(JSON.stringify({ type: 'error', message }));
         }
       },
       close(ws: ServerWebSocket<WSData>) {

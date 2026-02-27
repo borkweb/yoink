@@ -70,7 +70,7 @@ export function LogPanel({ tracked, maxLines = 10 }: Props) {
           </Text>
         </Box>
       )}
-      {['pr-created', 'failed', 'stopped', 'abandoned'].includes(status) && tracked.sessionId && (
+      {['pr-created', 'review-posted', 'failed', 'stopped', 'abandoned'].includes(status) && tracked.sessionId && (
         <Box>
           <Text dimColor>
             {'\u2503'} Resume: {resumeCommand(tracked)}

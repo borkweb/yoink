@@ -35,6 +35,8 @@ export function useYoinkState(url?: string): UseYoinkStateResult {
           const msg = JSON.parse(event.data);
           if (msg.type === 'state:full' || msg.type === 'state:changed') {
             setState(msg.data);
+          } else if (msg.type === 'error') {
+            console.error('[yoink]', msg.message);
           }
         } catch {
           // Ignore malformed messages

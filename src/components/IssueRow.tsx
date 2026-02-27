@@ -60,7 +60,7 @@ export function IssueRow({ tracked, focused, expanded, isHistory }: Props) {
       </Text>
       <Box width={12}>
         <Text bold={focused} color={focused ? 'cyan' : undefined} dimColor={dim}>
-          {issue.identifier}
+          {issue.identifier.startsWith('PR-') ? `PR #${issue.identifier.slice(3)}` : issue.identifier}
         </Text>
       </Box>
       <Box flexGrow={1}>
