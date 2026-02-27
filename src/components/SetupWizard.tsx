@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 import { mkdirSync, writeFileSync } from 'fs';
+import path from 'path';
 import { CONFIG_DIR, CONFIG_PATH } from '../config';
 
 interface WizardData {
@@ -33,8 +34,8 @@ interface StepConfig {
 
 const STEPS: StepConfig[] = [
   { key: 'linearApiKey', label: 'Linear API key', required: true, defaultValue: '', advanced: false },
-  { key: 'projectName', label: 'Project name (used as config key)', required: true, defaultValue: '', advanced: false },
-  { key: 'repoDir', label: 'Repository directory (absolute path)', required: true, defaultValue: '', advanced: false },
+  { key: 'projectName', label: 'Project name (used as config key)', required: true, defaultValue: path.basename(process.cwd()), advanced: false },
+  { key: 'repoDir', label: 'Repository directory (absolute path)', required: true, defaultValue: process.cwd(), advanced: false },
   { key: 'linearTeam', label: 'Linear team key (e.g. TEAM)', required: true, defaultValue: '', advanced: false },
   { key: 'linearAssignee', label: 'Linear assignee username', required: true, defaultValue: '', advanced: false },
   { key: 'linearLabel', label: 'Linear label for issues', required: false, defaultValue: 'AI Automation', advanced: false },
@@ -63,8 +64,8 @@ export function SetupWizard({ onDone }: Props) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const dataRef = useRef<WizardData>({
     linearApiKey: '',
-    projectName: '',
-    repoDir: '',
+    projectName: path.basename(process.cwd()),
+    repoDir: process.cwd(),
     linearTeam: '',
     linearAssignee: '',
     linearLabel: 'AI Automation',
@@ -213,7 +214,7 @@ allowed_tools = "${data.allowedTools}"
               ) : null}
               :{' '}
             </Text>
-            <TextInput value={inputValue} onChange={setInputValue} onSubmit={handleSubmit} />
+            <TextInput value={inputValue} onChange={setInputValue} onSubmit={handleSubmit} {...(currentStep.key === 'linearApiKey' ? { mask: '*' } : {})} />
           </Box>
           {error && (
             <Text color="red">{error}</Text>
