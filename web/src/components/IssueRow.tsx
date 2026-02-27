@@ -1,6 +1,6 @@
 import type { TrackedIssue } from '../../../src/types';
 import { StatusPill } from './StatusPill';
-import { PRIORITY_CONFIG, mapStatus } from '../lib/statusMap';
+import { mapStatus } from '../lib/statusMap';
 import { formatElapsed } from '../lib/formatElapsed';
 
 interface Props {
@@ -11,7 +11,6 @@ interface Props {
 }
 
 export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
-  const pri = PRIORITY_CONFIG[issue.issue.priority] ?? PRIORITY_CONFIG[0];
   const display = mapStatus(issue.status);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -31,17 +30,14 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       aria-label={`${issue.issue.identifier}: ${issue.issue.title}, ${display}`}
       className="grid items-center cursor-pointer transition-all duration-150 border-b border-[var(--border-primary)] rounded-sm"
       style={{
-        gridTemplateColumns: '28px 80px 1fr 120px 70px 80px',
+        gridTemplateColumns: '80px 1fr 120px 70px 80px',
         padding: '10px 14px',
         background: isSelected ? 'var(--bg-hover)' : 'transparent',
-        borderLeft: isSelected ? `2px solid ${PRIORITY_CONFIG[issue.issue.priority]?.color ?? 'var(--text-faint)'}` : '2px solid transparent',
+        borderLeft: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
       }}
       onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-hover)'; }}
       onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = isSelected ? 'var(--bg-hover)' : 'transparent'; }}
     >
-      <span role="cell" className="text-[11px] font-extrabold" style={{ color: pri.color }}>
-        {pri.icon}
-      </span>
       <span role="cell" className="text-xs">
         {issue.issue.url
           ? <a href={issue.issue.url} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>{issue.issue.identifier}</a>

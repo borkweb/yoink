@@ -29,18 +29,13 @@ export function App() {
       <TopBar
         issues={state.issues}
         title={state.title}
-        polling={state.polling}
-        nextPollAt={state.nextPollAt}
+        paused={state.paused}
         isDark={isDark}
         onToggleTheme={toggleTheme}
+        onTogglePause={() => dispatch(state.paused ? 'resume' : 'pause')}
       />
 
-      <Toolbar
-        paused={state.paused}
-        onPause={() => dispatch('pause')}
-        onResume={() => dispatch('resume')}
-        onReviewPR={() => setShowPRModal(true)}
-      />
+      <Toolbar onReviewPR={() => setShowPRModal(true)} />
 
       <IssueTable
         issues={visibleIssues}

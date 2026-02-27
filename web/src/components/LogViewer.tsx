@@ -15,9 +15,7 @@ export function LogViewer({ logs }: { logs: string[] }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs.length]);
 
-  if (logs.length === 0) {
-    return <span className="text-[var(--text-dimmed)] text-xs">No logs available</span>;
-  }
+  if (logs.length === 0) return null;
 
   return (
     <div
