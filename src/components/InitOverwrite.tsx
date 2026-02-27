@@ -1,9 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
 import { SetupWizard } from './SetupWizard';
-import { CONFIG_PATH } from '../config';
+import { CONFIG_PATH, loadConfig } from '../config';
 
 export function InitOverwrite() {
+  const existingData = useMemo(() => {
+    try {
+      const config = loadConfig();
+      const [projectName, project] = Object.entries(config.projects)[0] ?? [];
+      return {
+        linearApiKey: config.linear.apiKey,
+        projectName: projectName ?? '',
+        repoDir: project?.repoDir ?? '',
+        linearTeam: project?.linearTeam ?? '',
+        linearAssignee: project?.linearAssignee ?? '',
+        linearLabel: project?.linearLabel ?? '',
+        baseBranch: project?.baseBranch ?? 'main',
+        claudePlugins: config.defaults.claudePlugins.join(', '),
+        concurrency: String(config.defaults.concurrency),
+        maxTurns: String(config.defaults.maxTurns),
+        pollInterval: String(config.defaults.pollInterval),
+        githubCommand: project?.githubCommand ?? 'gh',
+        allowedTools: project?.allowedTools ?? '',
+      };
+    } catch {
+      return undefined;
+    }
+  }, []);
   const { exit } = useApp();
   const [confirmed, setConfirmed] = useState<boolean | null>(null);
 
@@ -17,7 +40,7 @@ export function InitOverwrite() {
   });
 
   if (confirmed === true) {
-    return <SetupWizard />;
+    return <SetupWizard initialData={existingData} />;
   }
 
   if (confirmed === false) {

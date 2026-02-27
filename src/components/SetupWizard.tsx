@@ -53,16 +53,18 @@ type Phase = 'input' | 'ask-advanced' | 'done';
 
 interface Props {
   onDone?: () => void;
+  initialData?: Partial<WizardData>;
 }
 
-export function SetupWizard({ onDone }: Props) {
+export function SetupWizard({ onDone, initialData }: Props) {
   const { exit } = useApp();
   const [stepIndex, setStepIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('input');
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const dataRef = useRef<WizardData>({
+
+  const defaults: WizardData = {
     linearApiKey: '',
     projectName: path.basename(process.cwd()),
     repoDir: process.cwd(),
@@ -76,13 +78,20 @@ export function SetupWizard({ onDone }: Props) {
     pollInterval: '30',
     githubCommand: 'gh',
     allowedTools: DEFAULT_ALLOWED_TOOLS,
-  });
+    ...initialData,
+  };
+
+  const dataRef = useRef<WizardData>(defaults);
 
   const visibleSteps = STEPS.filter((s) => !s.advanced);
   const advancedSteps = STEPS.filter((s) => s.advanced);
   const allActiveSteps = showAdvanced ? [...visibleSteps, ...advancedSteps] : visibleSteps;
 
   const currentStep = allActiveSteps[stepIndex];
+  const currentDefault = currentStep ? (defaults[currentStep.key] || currentStep.defaultValue) : '';
+  const currentDefaultDisplay = currentStep?.key === 'linearApiKey' && currentDefault
+    ? currentDefault.slice(0, 4) + '*'.repeat(Math.max(0, currentDefault.length - 4))
+    : currentDefault;
 
   useInput((input, key) => {
     if (phase === 'ask-advanced') {
@@ -100,7 +109,7 @@ export function SetupWizard({ onDone }: Props) {
 
   function handleSubmit(value: string) {
     const step = currentStep;
-    const finalValue = value.trim() || step.defaultValue;
+    const finalValue = value.trim() || currentDefault;
 
     if (step.required && !finalValue) {
       setError('This field is required');
@@ -183,13 +192,19 @@ allowed_tools = "${data.allowedTools}"
       <Box marginTop={1} />
 
       {/* Show completed steps */}
-      {allActiveSteps.slice(0, stepIndex).map((step) => (
-        <Box key={step.key}>
-          <Text dimColor>
-            {step.label}: {dataRef.current[step.key]}
-          </Text>
-        </Box>
-      ))}
+      {allActiveSteps.slice(0, stepIndex).map((step) => {
+        const val = dataRef.current[step.key];
+        const display = step.key === 'linearApiKey' && val
+          ? val.slice(0, 4) + '*'.repeat(Math.max(0, val.length - 4))
+          : val;
+        return (
+          <Box key={step.key}>
+            <Text dimColor>
+              {step.label}: {display}
+            </Text>
+          </Box>
+        );
+      })}
 
       {phase === 'ask-advanced' && (
         <Box marginTop={1} flexDirection="column">
@@ -209,8 +224,8 @@ allowed_tools = "${data.allowedTools}"
           <Box>
             <Text>
               {currentStep.label}
-              {currentStep.defaultValue ? (
-                <Text dimColor> [{currentStep.defaultValue}]</Text>
+              {currentDefaultDisplay ? (
+                <Text dimColor> [{currentDefaultDisplay}]</Text>
               ) : null}
               :{' '}
             </Text>
