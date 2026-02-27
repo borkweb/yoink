@@ -108,11 +108,66 @@ linear_label = "Auto"
     expect(config.defaults.webPort).toBe(7890);
   });
 
+  it('parses claude_plugins from defaults', () => {
+    const toml = `
+[defaults]
+claude_plugins = ["superpowers@claude-plugins-official", "context7@claude-plugins-official"]
+
+[linear]
+api_key = "lin_api_test"
+
+[projects.x]
+repo_dir = "/tmp/x"
+linear_team = "X"
+linear_assignee = "me"
+linear_label = "Auto"
+`;
+    const config = parseConfig(toml);
+    expect(config.defaults.claudePlugins).toEqual([
+      'superpowers@claude-plugins-official',
+      'context7@claude-plugins-official',
+    ]);
+  });
+
+  it('defaults claudePlugins to superpowers when not specified', () => {
+    const toml = `
+[linear]
+api_key = "lin_api_test"
+
+[projects.x]
+repo_dir = "/tmp/x"
+linear_team = "X"
+linear_assignee = "me"
+linear_label = "Auto"
+`;
+    const config = parseConfig(toml);
+    expect(config.defaults.claudePlugins).toEqual(['superpowers@claude-plugins-official']);
+  });
+
+  it('supports empty claude_plugins array', () => {
+    const toml = `
+[defaults]
+claude_plugins = []
+
+[linear]
+api_key = "lin_api_test"
+
+[projects.x]
+repo_dir = "/tmp/x"
+linear_team = "X"
+linear_assignee = "me"
+linear_label = "Auto"
+`;
+    const config = parseConfig(toml);
+    expect(config.defaults.claudePlugins).toEqual([]);
+  });
+
   it('parses TOML in the format the setup wizard generates', () => {
     const wizardOutput = `[defaults]
 concurrency = 2
 max_turns = 100
 poll_interval = 30
+claude_plugins = ["superpowers@claude-plugins-official"]
 
 [linear]
 api_key = "lin_api_abc123"
@@ -131,6 +186,7 @@ allowed_tools = "Read,Edit,Write,Glob,Grep,Skill,Task,Bash,Bash(git *),Bash(comp
     expect(config.defaults.concurrency).toBe(2);
     expect(config.defaults.maxTurns).toBe(100);
     expect(config.defaults.pollInterval).toBe(30);
+    expect(config.defaults.claudePlugins).toEqual(['superpowers@claude-plugins-official']);
 
     const p = config.projects.myproject;
     expect(p.name).toBe('myproject');

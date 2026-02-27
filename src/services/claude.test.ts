@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { buildPrompt, extractSessionId, buildResumeArgs, buildFreshArgs, resolveSuperpowersDir, buildReviewPrompt } from './claude';
+import { buildPrompt, extractSessionId, buildResumeArgs, buildFreshArgs, parsePluginSpecifier, resolvePluginDir, buildReviewPrompt } from './claude';
 import type { ProjectConfig } from '../types';
 
 const project: ProjectConfig = {
@@ -71,10 +71,29 @@ describe('buildFreshArgs', () => {
   });
 });
 
-describe('resolveSuperpowersDir', () => {
-  it('returns a string or null', () => {
-    const result = resolveSuperpowersDir();
+describe('parsePluginSpecifier', () => {
+  it('parses name@marketplace', () => {
+    expect(parsePluginSpecifier('superpowers@claude-plugins-official'))
+      .toEqual({ name: 'superpowers', marketplace: 'claude-plugins-official' });
+  });
+  it('returns null for missing @', () => {
+    expect(parsePluginSpecifier('superpowers')).toBeNull();
+  });
+  it('returns null for leading @', () => {
+    expect(parsePluginSpecifier('@marketplace')).toBeNull();
+  });
+  it('returns null for trailing @', () => {
+    expect(parsePluginSpecifier('name@')).toBeNull();
+  });
+});
+
+describe('resolvePluginDir', () => {
+  it('returns string or null for valid specifier', () => {
+    const result = resolvePluginDir('superpowers@claude-plugins-official');
     expect(result === null || typeof result === 'string').toBe(true);
+  });
+  it('returns null for invalid specifier', () => {
+    expect(resolvePluginDir('no-at-sign')).toBeNull();
   });
 });
 

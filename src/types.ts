@@ -54,6 +54,7 @@ export interface Config {
     maxTurns: number;
     pollInterval: number;
     webPort: number;
+    claudePlugins: string[];
   };
   linear: {
     apiKey: string;

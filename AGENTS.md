@@ -13,7 +13,7 @@
 - **Config**: TOML via `smol-toml`
 - **CLI**: `meow`
 - **Testing**: `bun test` (built-in test runner)
-- **Plugin dependency**: [superpowers](https://github.com/obra/superpowers) — resolved from `~/.claude/plugins/cache/` at runtime, auto-installed if missing. Provides TDD, debugging, and code review skills to spawned Claude instances (passed as a second `--plugin-dir`).
+- **Plugins**: Configurable via `claude_plugins` in config (defaults to [superpowers](https://github.com/obra/superpowers)) — resolved from `~/.claude/plugins/cache/` at runtime, auto-installed if missing. Each plugin is passed as a `--plugin-dir` to spawned Claude instances.
 
 ## Project Structure
 

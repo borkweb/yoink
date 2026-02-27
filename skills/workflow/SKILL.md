@@ -29,11 +29,7 @@ You are an autonomous coding agent working on a Linear issue. Follow this workfl
   BASE_SHA=$(git merge-base HEAD origin/<base-branch>)
   HEAD_SHA=$(git rev-parse HEAD)
   ```
-- Dispatch the `superpowers:code-reviewer` subagent via the Task tool with:
-  - `{WHAT_WAS_IMPLEMENTED}`: what you built for this issue
-  - `{PLAN_OR_REQUIREMENTS}`: the Linear issue title and description
-  - `{BASE_SHA}` / `{HEAD_SHA}`: the git range from above
-  - `{DESCRIPTION}`: brief summary of the changes
+- Dispatch a code reviewer subagent to review the changed code in this branch
 - Act on the subagent's feedback:
   - **Critical** issues: fix immediately before proceeding
   - **Important** issues: fix before proceeding

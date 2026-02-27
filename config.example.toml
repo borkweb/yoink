@@ -3,6 +3,7 @@ concurrency = 2
 max_turns = 100
 poll_interval = 30  # seconds between Linear polls (0 to disable)
 web_port = 7890     # HTTP/WebSocket dashboard port
+claude_plugins = ["superpowers@claude-plugins-official"]  # Claude Code plugins to install and load
 
 [linear]
 api_key = "lin_api_YOUR_KEY_HERE"

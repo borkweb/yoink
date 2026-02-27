@@ -24,6 +24,9 @@ export function parseConfig(toml: string): Config {
       maxTurns: Number(parsed.defaults?.max_turns ?? 100),
       pollInterval: Number(parsed.defaults?.poll_interval ?? 30),
       webPort: Number(parsed.defaults?.web_port ?? 7890),
+      claudePlugins: Array.isArray(parsed.defaults?.claude_plugins)
+        ? (parsed.defaults.claude_plugins as string[])
+        : ['superpowers@claude-plugins-official'],
     },
     linear: {
       apiKey: parsed.linear?.api_key ?? '',
@@ -95,6 +98,9 @@ export function loadConfig(): Config {
   }
   if (process.env.YOINK_POLL_INTERVAL) {
     config.defaults.pollInterval = Number(process.env.YOINK_POLL_INTERVAL);
+  }
+  if (process.env.YOINK_CLAUDE_PLUGINS) {
+    config.defaults.claudePlugins = process.env.YOINK_CLAUDE_PLUGINS.split(',').map(s => s.trim()).filter(Boolean);
   }
 
   return config;

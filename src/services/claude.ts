@@ -6,32 +6,51 @@ import type { ProjectConfig } from '../types';
 /** Absolute path to the yoink project root (used as --plugin-dir) */
 export const YOINK_ROOT = dirname(dirname(import.meta.dir));
 
-const SUPERPOWERS_CACHE = join(homedir(), '.claude', 'plugins', 'cache', 'superpowers-dev', 'superpowers');
+const PLUGIN_CACHE_BASE = join(homedir(), '.claude', 'plugins', 'cache');
 
-/** Resolve the installed superpowers plugin path, or null if not installed. */
-export function resolveSuperpowersDir(): string | null {
-  const matches = globSync('*/', { cwd: SUPERPOWERS_CACHE });
-  if (matches.length === 0) return null;
-  // Sort descending to pick the latest version
-  matches.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-  return join(SUPERPOWERS_CACHE, matches[0]);
+/** Parse a plugin specifier like "name@marketplace" into its parts. */
+export function parsePluginSpecifier(specifier: string): { name: string; marketplace: string } | null {
+  const atIndex = specifier.lastIndexOf('@');
+  if (atIndex <= 0 || atIndex === specifier.length - 1) return null;
+  return { name: specifier.slice(0, atIndex), marketplace: specifier.slice(atIndex + 1) };
 }
 
-/** Install the superpowers plugin via Claude CLI. Returns true on success. */
-export async function installSuperpowers(): Promise<boolean> {
-  const proc = Bun.spawn(['claude', 'plugin', 'install', 'superpowers@superpowers-dev'], {
+/** Resolve the installed path for a plugin specifier, or null if not installed. */
+export function resolvePluginDir(specifier: string): string | null {
+  const parsed = parsePluginSpecifier(specifier);
+  if (!parsed) return null;
+  const pluginPath = join(PLUGIN_CACHE_BASE, parsed.marketplace, parsed.name);
+  try {
+    const matches = globSync('*/', { cwd: pluginPath });
+    if (matches.length === 0) return null;
+    matches.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    return join(pluginPath, matches[0]);
+  } catch {
+    return null;
+  }
+}
+
+/** Install a plugin via Claude CLI. Returns true on success. */
+export async function installPlugin(specifier: string): Promise<boolean> {
+  const proc = Bun.spawn(['claude', 'plugin', 'install', specifier], {
     stdout: 'pipe',
     stderr: 'pipe',
   });
   return (await proc.exited) === 0;
 }
 
-/** Resolve superpowers path, auto-installing if needed. */
-export async function ensureSuperpowers(): Promise<string | null> {
-  let dir = resolveSuperpowersDir();
-  if (dir) return dir;
-  await installSuperpowers();
-  return resolveSuperpowersDir();
+/** Resolve plugin paths for all specifiers, auto-installing if needed. */
+export async function ensurePlugins(specifiers: string[]): Promise<string[]> {
+  const dirs: string[] = [];
+  for (const specifier of specifiers) {
+    let dir = resolvePluginDir(specifier);
+    if (!dir) {
+      await installPlugin(specifier);
+      dir = resolvePluginDir(specifier);
+    }
+    if (dir) dirs.push(dir);
+  }
+  return dirs;
 }
 
 export function buildPrompt(

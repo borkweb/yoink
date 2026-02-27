@@ -4,7 +4,7 @@ import type { Config } from '../types';
 import type { YoinkState } from './types';
 
 const config: Config = {
-  defaults: { concurrency: 2, maxTurns: 10, pollInterval: 0 },
+  defaults: { concurrency: 2, maxTurns: 10, pollInterval: 0, webPort: 7890, claudePlugins: [] },
   linear: { apiKey: 'test-key' },
   projects: {
     test: {

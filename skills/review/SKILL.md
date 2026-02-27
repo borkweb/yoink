@@ -20,8 +20,8 @@ You are reviewing a pull request. Follow this workflow precisely — do not skip
   ```
   (Replace `<base-branch>` with the base branch from your prompt)
 
-## 3. Dispatch superpowers:code-reviewer subagent
-- Use the Task tool with `superpowers:code-reviewer` subagent type
+## 3. Dispatch a code reviewer subagent
+- Perform a comprehensive code review of the changed code.
 
 ## 4. Post the review as a PR comment
 - Take the subagent's review output and be as concise as possible

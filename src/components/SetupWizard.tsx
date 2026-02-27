@@ -12,6 +12,7 @@ interface WizardData {
   linearAssignee: string;
   linearLabel: string;
   baseBranch: string;
+  claudePlugins: string;
   concurrency: string;
   maxTurns: string;
   pollInterval: string;
@@ -38,6 +39,7 @@ const STEPS: StepConfig[] = [
   { key: 'linearAssignee', label: 'Linear assignee username', required: true, defaultValue: '', advanced: false },
   { key: 'linearLabel', label: 'Linear label for issues', required: false, defaultValue: 'AI Automation', advanced: false },
   { key: 'baseBranch', label: 'Base branch', required: false, defaultValue: 'main', advanced: false },
+  { key: 'claudePlugins', label: 'Claude plugins (comma-separated)', required: false, defaultValue: 'superpowers@claude-plugins-official', advanced: false },
   // Advanced steps
   { key: 'concurrency', label: 'Concurrency (parallel Claude runs)', required: false, defaultValue: '2', advanced: true },
   { key: 'maxTurns', label: 'Max turns per Claude run', required: false, defaultValue: '100', advanced: true },
@@ -67,6 +69,7 @@ export function SetupWizard({ onDone }: Props) {
     linearAssignee: '',
     linearLabel: 'AI Automation',
     baseBranch: 'main',
+    claudePlugins: 'superpowers@claude-plugins-official',
     concurrency: '2',
     maxTurns: '100',
     pollInterval: '30',
@@ -122,10 +125,18 @@ export function SetupWizard({ onDone }: Props) {
   function writeConfig(data: WizardData) {
     mkdirSync(CONFIG_DIR, { recursive: true });
 
+    const pluginsArray = data.claudePlugins
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(s => `"${s}"`)
+      .join(', ');
+
     const toml = `[defaults]
 concurrency = ${data.concurrency}
 max_turns = ${data.maxTurns}
 poll_interval = ${data.pollInterval}
+claude_plugins = [${pluginsArray}]
 
 [linear]
 api_key = "${data.linearApiKey}"

@@ -3,7 +3,7 @@ import { homedir } from 'os';
 import type { Config, TrackedIssue, IssueStatus, ProjectConfig } from '../types';
 import { fetchIssues, updateIssueState, addComment } from './linear';
 import { createWorktree, removeWorktree, deleteBranch, worktreeDirFor, createReviewWorktree } from '../lib/git';
-import { buildPrompt, buildReviewPrompt, spawnClaude, YOINK_ROOT, ensureSuperpowers } from './claude';
+import { buildPrompt, buildReviewPrompt, spawnClaude, YOINK_ROOT, ensurePlugins } from './claude';
 import { loadState, saveIssueState, pruneState, saveState } from './state';
 import { fetchPRMetadata } from '../lib/pr';
 import { splitCommand } from '../lib/shell';
@@ -198,10 +198,8 @@ export class Processor {
   }
 
   async start(): Promise<void> {
-    const superpowersDir = await ensureSuperpowers();
-    if (superpowersDir) {
-      this.pluginDirs = [YOINK_ROOT, superpowersDir];
-    }
+    const pluginPaths = await ensurePlugins(this.config.defaults.claudePlugins);
+    this.pluginDirs = [YOINK_ROOT, ...pluginPaths];
     this.processQueue();
     this.schedulePoll();
   }

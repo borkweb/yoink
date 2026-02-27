@@ -6,22 +6,19 @@ A CLI tool that fetches Linear issues and processes them with Claude Code — cr
 
 1. Fetches issues from Linear (filtered by team, assignee, label, state=Todo)
 2. Creates an isolated git worktree per issue
-3. Spawns Claude Code with yoink + superpowers plugins (`--plugin-dir`) to implement the fix, run tests, review, commit, and create a PR
+3. Spawns Claude Code with yoink + configured plugins (`--plugin-dir`) to implement the fix, run tests, review, commit, and create a PR
 4. Updates Linear issue state throughout (Todo → In Progress → In Review)
 5. Cleans up worktrees after successful PRs
 
 Multiple issues run concurrently. Running issues can be stopped mid-execution. Failed and stopped issues persist across restarts and can be retried, continued (via Claude's `--resume`), or abandoned. All finished tickets show a copy-paste `claude --resume` command for interactive follow-up.
 
-You can also review any GitHub PR from the dashboard by pressing `v` and pasting a PR URL or number. Yoink creates a worktree, runs a superpowers code review via Claude, and posts the result as a comment on the PR.
+You can also review any GitHub PR from the dashboard by pressing `v` and pasting a PR URL or number. Yoink creates a worktree, runs a code review via Claude, and posts the result as a comment on the PR.
 
 ## Prerequisites
 
 - [Bun](https://bun.sh/) runtime
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
-- The [superpowers](https://github.com/obra/superpowers) Claude Code plugin — yoink auto-installs this on first run if missing, or install manually:
-  ```bash
-  claude plugin install superpowers@superpowers-dev
-  ```
+- Claude Code plugins are configurable via `claude_plugins` in config (defaults to [superpowers](https://github.com/obra/superpowers)) — yoink auto-installs configured plugins on first run
 
 ## Installation
 
@@ -46,6 +43,7 @@ cp config.example.toml ~/.config/yoink/config.toml
 concurrency = 2         # parallel Claude sessions
 max_turns = 100         # max Claude turns per issue
 poll_interval = 30      # seconds between Linear polls (0 to disable)
+claude_plugins = ["superpowers@claude-plugins-official"]  # plugins to install and load
 
 [linear]
 api_key = "lin_api_..."
@@ -60,7 +58,7 @@ github_command = "gh"                        # supports multi-word commands, e.g
 allowed_tools = "Read,Edit,Write,Glob,Grep,Bash(git *)"
 ```
 
-Environment variables override config values: `YOINK_LINEAR_API_KEY`, `YOINK_CONCURRENCY`, `YOINK_MAX_TURNS`, `YOINK_POLL_INTERVAL`.
+Environment variables override config values: `YOINK_LINEAR_API_KEY`, `YOINK_CONCURRENCY`, `YOINK_MAX_TURNS`, `YOINK_POLL_INTERVAL`, `YOINK_CLAUDE_PLUGINS` (comma-separated).
 
 ## Usage
 
@@ -113,15 +111,15 @@ yoink myproject --dev    # starts Vite dev server on port 5173 with HMR
 
 ## Skills
 
-Yoink is structured as a Claude Code plugin. When spawning Claude, it passes two `--plugin-dir` flags — one for yoink's own skills and one for the [superpowers](https://github.com/obra/superpowers) plugin — making the following skills available to every spawned instance:
+Yoink is structured as a Claude Code plugin. When spawning Claude, it passes `--plugin-dir` flags — one for yoink's own skills and one for each configured plugin (via `claude_plugins` in config, defaulting to [superpowers](https://github.com/obra/superpowers)) — making the following skills available to every spawned instance:
 
 **Yoink skills:**
 - **workflow** — end-to-end Linear issue flow: understand the issue, explore the codebase, implement, code review, commit, push, and create a PR
-- **review** — PR code review workflow: dispatch the superpowers code-reviewer subagent, format the output, post it as a PR comment
+- **review** — PR code review workflow: dispatch a code-reviewer subagent, format the output, post it as a PR comment
 - **quality-gates** — pre-commit checklist: run tests, lint, review the diff, check scope, validate the commit message
 - **standards** — engineering principles: small focused changes, follow existing patterns, no drive-by improvements, no leftover artifacts
 
-**Superpowers skills** (TDD, debugging, code review, etc.) — the workflow dispatches the `superpowers:code-reviewer` subagent before committing to catch issues early. The review skill uses it to post automated PR reviews.
+**Configured plugin skills** — by default, superpowers provides TDD, debugging, and code review skills. The workflow dispatches the `superpowers:code-reviewer` subagent before committing to catch issues early. You can add or replace plugins via the `claude_plugins` config array (set to `[]` to disable all external plugins).
 
 Skills live in `skills/` and are defined as `SKILL.md` files with YAML frontmatter. Claude auto-discovers and invokes them based on context. The prompt only provides issue context and project config — the skills handle the workflow.
 
