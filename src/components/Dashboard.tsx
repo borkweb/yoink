@@ -175,11 +175,11 @@ export function Dashboard({ engine }: Props) {
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" paddingX={2}>
       {/* Header */}
       <Box marginBottom={1} justifyContent="space-between">
         <Text bold color="cyan">
-          {' '}{title}
+          {title}
         </Text>
         {done && <Text color="green" bold>Complete</Text>}
         {dryRun && <Text color="yellow" bold>DRY RUN</Text>}
