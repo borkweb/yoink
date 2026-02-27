@@ -23,9 +23,7 @@ export function DetailPanel({ issue, onClose }: { issue: TrackedIssue; onClose: 
       <div className="flex justify-between items-start px-[18px] pt-3.5 pb-2.5 border-b border-[var(--border-primary)]">
         <div>
           <div className="flex items-center gap-2.5 mb-1.5">
-            <span className="text-[13px] font-bold" style={{ color: cfg.color }}>
-              {issue.issue.identifier}
-            </span>
+            <a href={issue.issue.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold hover:underline" style={{ color: cfg.color }}>{issue.issue.identifier}</a>
             <span className="text-[13px] text-[var(--text-tertiary)]">{issue.issue.title}</span>
           </div>
           <div className="flex gap-4 text-[11px] text-[var(--text-faint)]">

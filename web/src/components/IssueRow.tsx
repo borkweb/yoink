@@ -42,7 +42,12 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       <span role="cell" className="text-[11px] font-extrabold" style={{ color: pri.color }}>
         {pri.icon}
       </span>
-      <span role="cell" className="text-[var(--text-subtle)] text-xs">{issue.issue.identifier}</span>
+      <span role="cell" className="text-xs">
+        {issue.issue.url
+          ? <a href={issue.issue.url} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>{issue.issue.identifier}</a>
+          : <span className="text-[var(--text-subtle)]">{issue.issue.identifier}</span>
+        }
+      </span>
       <span role="cell" className="text-[var(--text-secondary)] text-[12.5px] whitespace-nowrap overflow-hidden text-ellipsis pr-3">
         {issue.issue.title}
       </span>
