@@ -39,8 +39,10 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = isSelected ? 'var(--bg-hover)' : 'transparent'; }}
     >
       <span role="cell" className="text-xs">
-        {issue.issue.identifier.startsWith('PR-') && issue.prUrl
-          ? <a href={issue.prUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>PR #{issue.issue.identifier.slice(3)}</a>
+        {issue.issue.identifier.startsWith('PR-')
+          ? issue.prUrl
+            ? <a href={issue.prUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>PR #{issue.issue.identifier.slice(3)}</a>
+            : <span className="text-[var(--text-subtle)]">PR #{issue.issue.identifier.slice(3)}</span>
           : issue.issue.url
             ? <a href={issue.issue.url} target="_blank" rel="noopener noreferrer" className="text-[var(--text-subtle)] hover:text-[var(--accent)] hover:underline" onClick={(e) => e.stopPropagation()}>{issue.issue.identifier}</a>
             : <span className="text-[var(--text-subtle)]">{issue.issue.identifier}</span>

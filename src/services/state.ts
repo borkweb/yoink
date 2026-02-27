@@ -4,6 +4,8 @@ import { dirname } from 'path';
 export interface PersistedIssue {
   status: string;
   branch: string;
+  title: string | null;
+  issueUrl: string | null;
   worktreeDir: string;
   sessionId: string | null;
   prUrl: string | null;

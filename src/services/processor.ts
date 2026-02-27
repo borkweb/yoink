@@ -70,28 +70,46 @@ export class Processor {
     if (!projectState) return [];
 
     const projectConfig = this.config.projects[project];
-    return Object.entries(projectState.issues).map(([identifier, persisted]) => ({
-      issue: {
-        id: '',
-        identifier,
-        title: persisted.branch,
-        description: '',
-        url: '',
-        priority: 0,
-        state: { name: '', type: '' },
-      },
-      project,
-      repoDir: projectConfig?.repoDir,
-      status: persisted.status as IssueStatus,
-      logs: [],
-      prUrl: persisted.prUrl ?? undefined,
-      error: persisted.error ?? undefined,
-      startedAt: persisted.startedAt,
-      completedAt: persisted.completedAt,
-      worktreeDir: persisted.worktreeDir,
-      sessionId: persisted.sessionId ?? undefined,
-      isHistory: true,
-    }));
+
+    // Build a map of PR numbers to URLs from siblings that have them
+    const prUrlByNumber = new Map<string, string>();
+    for (const [, persisted] of Object.entries(projectState.issues)) {
+      if (persisted.prUrl) {
+        const match = persisted.prUrl.match(/\/pull\/(\d+)/);
+        if (match) prUrlByNumber.set(match[1], persisted.prUrl);
+      }
+    }
+
+    return Object.entries(projectState.issues).map(([identifier, persisted]) => {
+      // For PR-* items missing prUrl, try to reconstruct from siblings
+      let prUrl = persisted.prUrl ?? undefined;
+      if (!prUrl && identifier.startsWith('PR-')) {
+        prUrl = prUrlByNumber.get(identifier.slice(3));
+      }
+
+      return {
+        issue: {
+          id: '',
+          identifier,
+          title: persisted.title ?? persisted.branch,
+          description: '',
+          url: persisted.issueUrl ?? '',
+          priority: 0,
+          state: { name: '', type: '' },
+        },
+        project,
+        repoDir: projectConfig?.repoDir,
+        status: persisted.status as IssueStatus,
+        logs: [],
+        prUrl,
+        error: persisted.error ?? undefined,
+        startedAt: persisted.startedAt,
+        completedAt: persisted.completedAt,
+        worktreeDir: persisted.worktreeDir,
+        sessionId: persisted.sessionId ?? undefined,
+        isHistory: true,
+      };
+    });
   }
 
   mergeHistory(historyIssues: TrackedIssue[]): void {
@@ -328,6 +346,7 @@ export class Processor {
       status: 'creating-worktree',
       logs: [],
       prNumber: input.prNumber,
+      prUrl: meta.url,
       startedAt: Date.now(),
     };
 
@@ -489,6 +508,8 @@ export class Processor {
     saveIssueState(this.statePath, tracked.project, tracked.issue.identifier, {
       status: tracked.status,
       branch: `linear/${tracked.issue.identifier.toLowerCase()}`,
+      title: tracked.issue.title,
+      issueUrl: tracked.issue.url || null,
       worktreeDir: tracked.worktreeDir ?? '',
       sessionId: tracked.sessionId ?? null,
       prUrl: tracked.prUrl ?? null,
