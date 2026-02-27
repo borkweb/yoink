@@ -46,7 +46,7 @@ export function StatusBar({ issues, paused, startedAt, nextPollAt }: Props) {
       </Box>
       <Box gap={2}>
         <Text dimColor>{time}</Text>
-        <Text dimColor>[j/k] nav  [enter] expand  [s] stop  [r/c/d] actions  [v] review  [p] pause  [q] quit</Text>
+        <Text dimColor>[j/k] nav  [enter] expand  [s] stop  [v] review  [p] pause  [q] quit</Text>
       </Box>
     </Box>
   );
