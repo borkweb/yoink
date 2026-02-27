@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { TrackedIssue } from '../../../src/types';
 import { StatusPill } from './StatusPill';
 import { mapStatus } from '../lib/statusMap';
@@ -12,6 +13,7 @@ interface Props {
 
 export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
   const display = mapStatus(issue.status);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -28,15 +30,16 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
       onKeyDown={handleKeyDown}
       aria-expanded={isSelected}
       aria-label={`${issue.issue.identifier}: ${issue.issue.title}, ${display}`}
-      className="grid items-start cursor-pointer transition-all duration-150 border-b border-[var(--border-primary)] rounded-sm"
+      className={`grid items-start cursor-pointer transition-all duration-150 border-b border-[var(--border-primary)] ${isSelected ? 'rounded-t-sm' : 'rounded-sm'}`}
       style={{
         gridTemplateColumns: '80px 1fr 120px 70px',
         padding: '10px 14px',
-        background: isSelected ? 'var(--bg-hover)' : 'transparent',
+        background: isSelected ? 'var(--bg-selected)' : 'transparent',
         borderLeft: isSelected ? '2px solid var(--accent)' : '2px solid transparent',
+        borderBottom: isSelected ? 'none' : undefined,
       }}
       onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-hover)'; }}
-      onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = isSelected ? 'var(--bg-hover)' : 'transparent'; }}
+      onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
     >
       <span role="cell" className="text-xs">
         {issue.issue.identifier.startsWith('PR-')
@@ -80,11 +83,20 @@ export function IssueRow({ issue, isSelected, onClick, onAction }: Props) {
               cont
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onAction('deleteIssue', issue.issue.identifier, issue.startedAt); }}
-              aria-label={`Delete ${issue.issue.identifier}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirmDelete) {
+                  onAction('deleteIssue', issue.issue.identifier, issue.startedAt);
+                  setConfirmDelete(false);
+                } else {
+                  setConfirmDelete(true);
+                }
+              }}
+              onBlur={() => setConfirmDelete(false)}
+              aria-label={confirmDelete ? `Confirm delete ${issue.issue.identifier}` : `Delete ${issue.issue.identifier}`}
               className="px-2 py-0.5 text-[10px] rounded cursor-pointer bg-[var(--btn-danger-bg)] border border-[var(--btn-danger-border)] text-[var(--btn-danger-text)]"
             >
-              delete
+              {confirmDelete ? 'confirm?' : 'delete'}
             </button>
           </span>
         )}

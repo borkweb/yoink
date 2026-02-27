@@ -6,6 +6,7 @@
   --bg-chrome: #FFFFFF;
   --bg-surface: #F9FAFB;
   --bg-hover: #F3F4F6;
+  --bg-selected: #EBEDF0;
   --bg-inset: #F3F4F6;
   --bg-overlay: rgba(0, 0, 0, 0.3);
 
@@ -74,6 +75,7 @@
   --bg-chrome: #080808;
   --bg-surface: #0A0A0A;
   --bg-hover: #0D0D0D;
+  --bg-selected: #141414;
   --bg-inset: #111111;
   --bg-overlay: rgba(0, 0, 0, 0.7);
 

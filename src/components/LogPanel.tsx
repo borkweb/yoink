@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { existsSync } from 'fs';
 import { homedir } from 'os';
+import { resolve } from 'path';
 import type { TrackedIssue } from '../types';
 
 interface Props {
@@ -18,7 +19,7 @@ function resumeCommand(tracked: TrackedIssue): string {
   const resume = `claude --resume ${tracked.sessionId}`;
   if (!tracked.worktreeDir) return resume;
 
-  const wtPath = tildify(tracked.worktreeDir);
+  const wtPath = tildify(resolve(tracked.worktreeDir));
 
   if (existsSync(tracked.worktreeDir)) {
     return `cd ${wtPath} && ${resume}`;
